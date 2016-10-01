@@ -1,4 +1,4 @@
-# GFS Project
+# GFS Project - GNOME 3.22
 [![gfs one](https://github.com/slackport/gfs/blob/master/img/gfs.01.tn.png)]
 (https://github.com/slackport/gfs/blob/master/img/gfs.01.png?raw=true)
 [![gfs two](https://github.com/slackport/gfs/blob/master/img/gfs.02.tn.png)]
@@ -8,10 +8,6 @@
 ### Introduction
 
  GFS is a personal project that makes possible to use GNOME on Slackware GNU/Linux operating system without systemd or wayland programs.
-
-### Why "from Scracth"?
-
- I had been trying to compile GNOME in different ways, but only got something of real value after following the steps outlined in the Beyond Linux From Scratch (BLFS) ebook, so...
 
 # WARNING
  Version 3.22 will upgrade some Slackware official packages:
