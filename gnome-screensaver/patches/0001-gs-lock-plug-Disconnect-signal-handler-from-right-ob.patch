@@ -1,0 +1,28 @@
+From ccaeb4c499e26560d48a9ccbf00254bb96076745 Mon Sep 17 00:00:00 2001
+From: Iain Lane <iain@orangesquash.org.uk>
+Date: Thu, 16 Jul 2015 16:09:19 +0200
+Subject: [PATCH] gs-lock-plug: Disconnect signal handler from right object
+
+It's connected to a GdkKeymap, not a GSLockPlug.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=752202
+---
+ src/gs-lock-plug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/gs-lock-plug.c b/src/gs-lock-plug.c
+index 1e74d8f..ee4c0f3 100644
+--- a/src/gs-lock-plug.c
++++ b/src/gs-lock-plug.c
+@@ -483,7 +483,7 @@ gs_lock_plug_run (GSLockPlug *plug)
+                 g_signal_handler_disconnect (plug, unmap_handler);
+                 g_signal_handler_disconnect (plug, delete_handler);
+                 g_signal_handler_disconnect (plug, destroy_handler);
+-                g_signal_handler_disconnect (plug, keymap_handler);
++                g_signal_handler_disconnect (keymap, keymap_handler);
+         }
+ 
+         g_object_unref (plug);
+-- 
+2.1.4
+

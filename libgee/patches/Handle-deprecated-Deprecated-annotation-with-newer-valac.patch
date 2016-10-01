@@ -1,0 +1,78 @@
+From: Rico Tzschichholz <ricotz@ubuntu.com>
+Date: Thu, 9 Jun 2016 08:38:30 +0200
+Subject: Handle deprecated Deprecated annotation with newer valac
+
+(cherry-picked from commit 1c965b621f2a5ad0769e14b4ba95d22fd555e6ab)
+---
+ gee/hashmultiset.vala |  4 ++++
+ gee/map.vala          | 16 ++++++++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/gee/hashmultiset.vala b/gee/hashmultiset.vala
+index 5b25acd..1bedb75 100644
+--- a/gee/hashmultiset.vala
++++ b/gee/hashmultiset.vala
+@@ -59,7 +59,11 @@ public class Gee.HashMultiSet<G> : AbstractMultiSet<G> {
+ 	 * @param hash_func an optional element hash function
+ 	 * @param equal_func an optional element equality testing function
+ 	 */
++#if VALA_0_32
++	[Version (deprecated = true, deprecated_since = "0.13.3", replacement = "gee_hash_multi_set_new_fixed")]
++#else
+ 	[Deprecated (since = "0.13.3", replacement = "gee_hash_multi_set_new_fixed")]
++#endif
+ 	[CCode (cname = "gee_hash_multi_set_new")]
+ 	public HashMultiSet.broken (HashDataFunc<G>? hash_func = null, EqualDataFunc<G>? equal_func = null) {
+ 		base (new HashMap<G, int> (hash_func, equal_func));
+diff --git a/gee/map.vala b/gee/map.vala
+index e8e3138..ae2cdb5 100644
+--- a/gee/map.vala
++++ b/gee/map.vala
+@@ -92,7 +92,11 @@ public interface Gee.Map<K,V> : Object, Iterable<Map.Entry<K,V>> {
+ 	 *
+ 	 * @return    ``true`` if key is found, ``false`` otherwise
+ 	 */
++#if VALA_0_32
++	[Version (deprecated = true, replacement = "Map.has_key")]
++#else
+ 	[Deprecated (replacement = "Map.has_key")]
++#endif
+ 	public bool contains (K key) {
+ 		return has_key(key);
+ 	}
+@@ -143,7 +147,11 @@ public interface Gee.Map<K,V> : Object, Iterable<Map.Entry<K,V>> {
+ 	 *
+ 	 * @return    ``true`` if the map has been changed, ``false`` otherwise
+ 	 */
++#if VALA_0_32
++	[Version (deprecated = true, replacement = "Map.unset")]
++#else
+ 	[Deprecated (replacement = "Map.unset")]
++#endif
+ 	public bool remove (K key, out V? value = null) {
+ 		return unset (key, out value);
+ 	}
+@@ -192,7 +200,11 @@ public interface Gee.Map<K,V> : Object, Iterable<Map.Entry<K,V>> {
+ 	 *
+ 	 * @param map the map which common items are deleted from this map
+ 	 */
++#if VALA_0_32
++	[Version (deprecated = true, replacement = "Map.unset_all")]
++#else
+ 	[Deprecated (replacement = "Map.unset_all")]
++#endif
+ 	public bool remove_all (Map<K,V> map) {
+ 		return unset_all (map);
+ 	}
+@@ -216,7 +228,11 @@ public interface Gee.Map<K,V> : Object, Iterable<Map.Entry<K,V>> {
+ 	 *
+ 	 * @param map the map which items will be compared with this map
+ 	 */
++#if VALA_0_32
++	[Version (deprecated = true, replacement = "Map.has_all")]
++#else
+ 	[Deprecated (replacement = "Map.has_all")]
++#endif
+ 	public bool contains_all (Map<K,V> map) {
+ 		return has_all (map);
+ 	}

@@ -1,0 +1,44 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Fri, 13 May 2016 10:26:56 +0200
+Subject: wireless-security: fix failed assertion in default_filter_privkey()
+
+The @out_encrypted argument of nm_utils_file_is_private_key() must be
+initialized to FALSE. When using libnm-glib, keep the value set to
+TRUE since encryption detection is not supported for all file types.
+
+This fixes the following:
+
+libnm-CRITICAL **: nm_utils_file_is_private_key: assertion 'out_encrypted == NULL || *out_encrypted == FALSE' failed
+
+https://bugzilla.gnome.org/show_bug.cgi?id=763578
+(cherry picked from commit 8e60431a7d6fc4c5545e58464e10b9131cbd3e6a)
+---
+ src/wireless-security/eap-method.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/wireless-security/eap-method.c b/src/wireless-security/eap-method.c
+index e771b58..3c7b454 100644
+--- a/src/wireless-security/eap-method.c
++++ b/src/wireless-security/eap-method.c
+@@ -393,7 +393,7 @@ default_filter_privkey (const GtkFileFilterInfo *filter_info, gpointer user_data
+ 	const char *extensions[] = { ".der", ".pem", ".p12", ".key", NULL };
+ #endif
+ 	gboolean require_encrypted = !!user_data;
+-	gboolean is_encrypted = TRUE;
++	gboolean is_encrypted;
+ 
+ 	if (!filter_info->filename)
+ 		return FALSE;
+@@ -402,10 +402,12 @@ default_filter_privkey (const GtkFileFilterInfo *filter_info, gpointer user_data
+ 	if (!file_has_extension (filter_info->filename, extensions))
+ 		return FALSE;
+ 
++	is_encrypted = TRUE;
+ 	if (   !file_is_der_or_pem (filter_info->filename, TRUE, &is_encrypted)
+ 	    && !nm_utils_file_is_pkcs12 (filter_info->filename))
+ 		return FALSE;
+ #elif defined (LIBNM_BUILD)
++	is_encrypted = FALSE;
+ 	if (!nm_utils_file_is_private_key (filter_info->filename, &is_encrypted))
+ 		return FALSE;
+ #else

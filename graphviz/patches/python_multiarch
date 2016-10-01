@@ -1,0 +1,82 @@
+Description: Handle multiarch Python
+Author: Colin Watson <cjwatson@ubuntu.com>
+Forwarded: no
+Last-Update: 2013-01-07
+
+Index: graphviz-2.38.0/config/config_python.py
+===================================================================
+--- graphviz-2.38.0.orig/config/config_python.py
++++ graphviz-2.38.0/config/config_python.py
+@@ -9,4 +9,8 @@ elif sys.argv[1] == "archsitelib":
+     print sysconfig.get_python_lib(1,0)
+ elif sys.argv[1] == "sitelib":
+     print sysconfig.get_python_lib(0,0)
++elif sys.argv[1] == "includes":
++    print "-I%s -I%s" % (
++        sysconfig.get_python_inc(),
++        sysconfig.get_python_inc(plat_specific=True))
+ 
+Index: graphviz-2.38.0/configure.ac
+===================================================================
+--- graphviz-2.38.0.orig/configure.ac
++++ graphviz-2.38.0/configure.ac
+@@ -1176,7 +1176,7 @@ else
+ 	use_python="No (python is too old)"
+       else
+         PYTHON_PREFIX=`$PYTHON -c "import sys; print sys.prefix"`
+-        PYTHON_INCLUDES=-I$PYTHON_PREFIX/include/python$PYTHON_VERSION_SHORT
++        PYTHON_INCLUDES="`$PYTHON $srcdir/config/config_python.py includes`"
+         PYTHON_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON_INSTALL_DIR="`$PYTHON $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+@@ -1240,7 +1240,7 @@ else
+ 	use_python23="No (python2.3 is too old)"
+       else
+         PYTHON23_PREFIX=`$PYTHON23 -c "import sys; print sys.prefix"`
+-        PYTHON23_INCLUDES=-I$PYTHON23_PREFIX/include/python$PYTHON23_VERSION_SHORT
++        PYTHON23_INCLUDES="`$PYTHON23 $srcdir/config/config_python.py includes`"
+         PYTHON23_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON23_INSTALL_DIR="`$PYTHON23 $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+@@ -1304,7 +1304,7 @@ else
+ 	use_python24="No (python2.4 is too old)"
+       else
+         PYTHON24_PREFIX=`$PYTHON24 -c "import sys; print sys.prefix"`
+-        PYTHON24_INCLUDES=-I$PYTHON24_PREFIX/include/python$PYTHON24_VERSION_SHORT
++        PYTHON24_INCLUDES="`$PYTHON24 $srcdir/config/config_python.py includes`"
+         PYTHON24_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON24_INSTALL_DIR="`$PYTHON24 $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+@@ -1368,8 +1368,8 @@ else
+ 	use_python25="No (python2.5 is too old)"
+       else
+         PYTHON25_PREFIX=`$PYTHON25 -c "import sys; print sys.prefix"`
+-        PYTHON25_INCLUDES=-I$PYTHON25_PREFIX/include/python$PYTHON25_VERSION_SHORT
+-        PYTHON24_LIBS="-lpython$PYTHON_VERSION_SHORT"
++        PYTHON25_INCLUDES="`$PYTHON25 $srcdir/config/config_python.py includes`"
++        PYTHON25_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON25_INSTALL_DIR="`$PYTHON25 $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+         CPPFLAGS="$CPPFLAGS $PYTHON25_INCLUDES"
+@@ -1432,8 +1432,8 @@ else
+ 	use_python26="No (python2.6 is too old)"
+       else
+         PYTHON26_PREFIX=`$PYTHON26 -c "import sys; print sys.prefix"`
+-        PYTHON26_INCLUDES=-I$PYTHON26_PREFIX/include/python$PYTHON26_VERSION_SHORT
+-        PYTHON24_LIBS="-lpython$PYTHON_VERSION_SHORT"
++        PYTHON26_INCLUDES="`$PYTHON26 $srcdir/config/config_python.py includes`"
++        PYTHON26_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON26_INSTALL_DIR="`$PYTHON26 $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+         CPPFLAGS="$CPPFLAGS $PYTHON26_INCLUDES"
+@@ -1496,8 +1496,8 @@ else
+ 	use_python27="No (python2.7 is too old)"
+       else
+         PYTHON27_PREFIX=`$PYTHON27 -c "import sys; print sys.prefix"`
+-        PYTHON27_INCLUDES=-I$PYTHON27_PREFIX/include/python$PYTHON27_VERSION_SHORT
+-        PYTHON24_LIBS="-lpython$PYTHON_VERSION_SHORT"
++        PYTHON27_INCLUDES="`$PYTHON27 $srcdir/config/config_python.py includes`"
++        PYTHON27_LIBS="-lpython$PYTHON_VERSION_SHORT"
+         PYTHON27_INSTALL_DIR="`$PYTHON27 $srcdir/config/config_python.py archsitelib`"
+         save_CPPFLAGS=$CPPFLAGS
+         CPPFLAGS="$CPPFLAGS $PYTHON27_INCLUDES"

@@ -1,0 +1,83 @@
+Author: Jan Dittberner <jandd@debian.org>
+Subject: improve Python test to cover low level FascistCheck
+Bug-Debian: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=737040
+--- a/python/test_cracklib.py
++++ b/python/test_cracklib.py
+@@ -15,6 +15,13 @@
+ 
+ 
+ class TestModuleFunctions(unittest.TestCase):
++    def test_FascistCheck(self):
++        try:
++            cracklib.FascistCheck('test', dictpath=dictpath)
++            self.fail('expected ValueError')
++        except ValueError:
++            pass
++
+     def test_VeryFascistCheck(self):
+         try:
+             cracklib.VeryFascistCheck('test', dictpath=dictpath)
+@@ -68,7 +75,7 @@
+ 
+     def test_simple_lower(self):
+         for passwd in ['t' * i for i in range(
+-            cracklib.MIN_LENGTH - cracklib.LOW_CREDIT)]:
++                cracklib.MIN_LENGTH - cracklib.LOW_CREDIT)]:
+             self.assertEquals(
+                 1, cracklib.simple(passwd),
+                 'password {0} should be detected as too simple'.format(
+@@ -78,7 +85,7 @@
+ 
+     def test_simple_upper(self):
+         for passwd in ['T' * i for i in range(
+-            cracklib.MIN_LENGTH - cracklib.UP_CREDIT)]:
++                cracklib.MIN_LENGTH - cracklib.UP_CREDIT)]:
+             self.assertEquals(
+                 1, cracklib.simple(passwd),
+                 'password {0} should be detected as too simple'.format(
+@@ -88,7 +95,7 @@
+ 
+     def test_simple_digit(self):
+         for passwd in ['1' * i for i in range(
+-            cracklib.MIN_LENGTH - cracklib.DIG_CREDIT)]:
++                cracklib.MIN_LENGTH - cracklib.DIG_CREDIT)]:
+             self.assertEquals(
+                 1, cracklib.simple(passwd),
+                 'password {0} should be detected as too simple'.format(
+@@ -98,7 +105,7 @@
+ 
+     def test_simple_other(self):
+         for passwd in ['#' * i for i in range(
+-            cracklib.MIN_LENGTH - cracklib.OTH_CREDIT)]:
++                cracklib.MIN_LENGTH - cracklib.OTH_CREDIT)]:
+             self.assertEquals(
+                 1, cracklib.simple(passwd),
+                 'password {0} should be detected as too simple'.format(
+@@ -109,14 +116,16 @@
+     def test_simple_combinations(self):
+         testset = '#a' * (cracklib.MIN_LENGTH // 2)
+         for passwd in [testset[:i] for i in range(
+-            cracklib.MIN_LENGTH - cracklib.LOW_CREDIT - cracklib.OTH_CREDIT)]:
++                cracklib.MIN_LENGTH -
++                cracklib.LOW_CREDIT -
++                cracklib.OTH_CREDIT)]:
+             self.assertEquals(
+                 1, cracklib.simple(passwd),
+                 'password {0} should be detected as too simple'.format(
+                     passwd))
+         self.assertEquals(0, cracklib.simple(
+             testset[:(cracklib.MIN_LENGTH - cracklib.LOW_CREDIT -
+-                cracklib.OTH_CREDIT)]))
++                      cracklib.OTH_CREDIT)]))
+ 
+ 
+ tests.append(TestModuleFunctions)
+@@ -127,7 +136,7 @@
+     print(('cracklib is installed in: ' + os.path.dirname(__file__)))
+     print(('cracklib version: ' + __version__))
+     print((sys.version))
+-    dictpath=use_dictpath
++    dictpath = use_dictpath
+ 
+     suite = unittest.TestSuite()
+     for cls in tests:

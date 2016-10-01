@@ -1,0 +1,17 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+                         |-----handy-ruler------------------------------------------------------|
+telepathy-mission-control: Telepathy Mission Control
+telepathy-mission-control:
+telepathy-mission-control: Mission Control-or MC for short-is a Telepathy component implementing
+telepathy-mission-control: both the Account Manager and Channel Dispatcher specifications. It
+telepathy-mission-control: stores your IM account settings, deals with talking to the relevant
+telepathy-mission-control: connection managers to bring accounts online where necessary, and
+telepathy-mission-control: dispatches incoming and outgoing communication channels to the
+telepathy-mission-control: relevant applications.
+telepathy-mission-control:

@@ -1,0 +1,41 @@
+From: Thomas Haller <thaller@redhat.com>
+Date: Fri, 13 May 2016 18:22:01 +0200
+Subject: applet: remove assert(s_con) from applet_get_active_vpn_connection()
+
+This assertion is just to strict. On client side, we cannot expect that
+all connections that NetworkManager exposes are valid.
+
+In libnm/libnm-glib there was an old bug, that connections which don't verify
+could be completely bogus and thus hit this assertion. This got fixed by
+https://cgit.freedesktop.org/NetworkManager/NetworkManager/commit/?id=23136ecf89f279479337ead355b7ff5e80465a0b
+and with a fixed libnm/libnm-glib, we would always expect that a
+connection has at least a NMSettingConnection instance.
+
+Nonetheless, there is no reason to enforce that with an assert.
+
+This was already fixed before by 22468c05291d3d88ddc68f8983bffe54f29f5f82
+and reverted again by c86d66632ad76aa4a93593a07a9b4e25f18efbf7.
+
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=815668
+https://bugzilla.redhat.com/show_bug.cgi?id=1313866
+https://bugzilla.redhat.com/show_bug.cgi?id=1314650
+https://bugzilla.gnome.org/show_bug.cgi?id=765830
+(cherry picked from commit c3255ed740592a2f23a7ebc47f1acd2dd2d768b3)
+---
+ src/applet.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/applet.c b/src/applet.c
+index af1e3d4..792d825 100644
+--- a/src/applet.c
++++ b/src/applet.c
+@@ -1123,7 +1123,8 @@ applet_get_active_vpn_connection (NMApplet *applet,
+ 			continue;
+ 
+ 		s_con = nm_connection_get_setting_connection (connection);
+-		g_assert (s_con);
++		if (!s_con)
++			continue;
+ 
+ 		if (!strcmp (nm_setting_connection_get_connection_type (s_con), NM_SETTING_VPN_SETTING_NAME)) {
+ 			ret = candidate;

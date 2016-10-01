@@ -1,0 +1,13 @@
+usr/include/gcr-3
+usr/lib/*/libgcr-3.so
+usr/lib/*/libgcr-base-3.so
+usr/lib/*/libgcr-ui-3.so
+usr/lib/*/pkgconfig/gcr-3.pc
+usr/lib/*/pkgconfig/gcr-base-3.pc
+usr/lib/*/pkgconfig/gcr-ui-3.pc
+usr/share/gir-1.0/Gcr-3.gir
+usr/share/gir-1.0/GcrUi-3.gir
+usr/share/vala/vapi/gcr-3.vapi
+usr/share/vala/vapi/gcr-3.deps
+usr/share/vala/vapi/gcr-ui-3.deps
+usr/share/vala/vapi/gcr-ui-3.vapi

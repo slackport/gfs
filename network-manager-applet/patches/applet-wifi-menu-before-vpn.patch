@@ -1,0 +1,38 @@
+From: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Date: Fri, 20 May 2016 14:34:57 +0800
+Subject: applet-wifi-menu-before-vpn
+
+---
+ src/applet.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/src/applet.c b/src/applet.c
+index 3542958..8406739 100644
+--- a/src/applet.c
++++ b/src/applet.c
+@@ -1457,8 +1457,6 @@ nma_menu_add_vpn_submenu (GtkWidget *menu, NMApplet *applet)
+ 	GPtrArray *list;
+ 	int i;
+ 
+-	nma_menu_add_separator_item (menu);
+-
+ 	vpn_menu = GTK_MENU (gtk_menu_new ());
+ 
+ 	item = GTK_MENU_ITEM (gtk_menu_item_new_with_mnemonic (_("_VPN Connections")));
+@@ -1624,14 +1622,14 @@ static void nma_menu_show_cb (GtkWidget *menu, NMApplet *applet)
+ 	}
+ 
+ 	nma_menu_add_devices (menu, applet);
+-	nma_menu_add_vpn_submenu (menu, applet);
+ 
+ 	if (has_usable_wifi (applet)) {
+ 		/* Add the "Hidden Wi-Fi network..." entry */
+-		nma_menu_add_separator_item (menu);
+ 		nma_menu_add_hidden_network_item (menu, applet);
+ 		nma_menu_add_create_network_item (menu, applet);
++		nma_menu_add_separator_item (menu);
+ 	}
++	nma_menu_add_vpn_submenu (menu, applet);
+ 
+ 	if (!INDICATOR_ENABLED (applet))
+ 		gtk_widget_show_all (menu);

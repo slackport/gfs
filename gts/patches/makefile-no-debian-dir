@@ -1,0 +1,26 @@
+Description: Removes debian/ from Makefile.*
+ Removed in order to clean debian/ dir from Makefiles by upstream
+Author: Ruben Molina <rmolina@udea.edu.co>
+Last-Update: 2013-09-06
+
+--- gts-0.7.6+darcs121130.orig/Makefile.am
++++ gts-0.7.6+darcs121130/Makefile.am
+@@ -1,6 +1,6 @@
+ ## Process this file with automake to produce Makefile.in
+ 
+-SUBDIRS = src tools examples doc test debian
++SUBDIRS = src tools examples doc test 
+ 
+ OSC_DIR=$(HOME)/local/src/osc/home:popinet/$(PACKAGE)-snapshot
+ 
+--- gts-0.7.6+darcs121130.orig/Makefile.in
++++ gts-0.7.6+darcs121130/Makefile.in
+@@ -263,7 +263,7 @@ target_alias = @target_alias@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-SUBDIRS = src tools examples doc test debian
++SUBDIRS = src tools examples doc test 
+ OSC_DIR = $(HOME)/local/src/osc/home:popinet/$(PACKAGE)-snapshot
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = gts.pc

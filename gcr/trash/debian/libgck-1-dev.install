@@ -1,0 +1,7 @@
+usr/include/gck-1
+usr/lib/*/libgck-1.so
+usr/lib/*/pkgconfig/gck-1.pc
+usr/share/gir-1.0/Gck-1.gir
+usr/share/vala/vapi/gck-1.deps
+usr/share/vala/vapi/gck-1.vapi
+usr/share/vala/vapi/pkcs11.vapi

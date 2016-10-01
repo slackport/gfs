@@ -1,0 +1,16 @@
+Description: Avoid integer overflow in zalloc
+Author: Mario Limonciello <mario_limonciello@dell.com>
+
+Index: gcab-0.6/libgcab/cabinet.c
+===================================================================
+--- gcab-0.6.orig/libgcab/cabinet.c	2016-02-17 12:31:21.000000000 -0600
++++ gcab-0.6/libgcab/cabinet.c	2016-02-17 12:34:29.028281256 -0600
+@@ -4,7 +4,7 @@
+ static voidpf
+ zalloc (voidpf opaque, uInt items, uInt size)
+ {
+-    return g_malloc (items *size);
++    return g_malloc_n (items, size);
+ }
+ static void
+ zfree (voidpf opaque, voidpf address)

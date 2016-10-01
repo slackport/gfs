@@ -1,0 +1,26 @@
+From: Alberto Garcia <berto@igalia.com>
+Subject: Install the MiniBrowser binary
+Forwarded: not-needed
+Index: webkitgtk/Tools/MiniBrowser/gtk/CMakeLists.txt
+===================================================================
+--- webkitgtk.orig/Tools/MiniBrowser/gtk/CMakeLists.txt
++++ webkitgtk/Tools/MiniBrowser/gtk/CMakeLists.txt
+@@ -60,4 +60,4 @@ add_executable(MiniBrowser ${MiniBrowser
+ target_link_libraries(MiniBrowser ${MiniBrowser_LIBRARIES})
+ set_target_properties(MiniBrowser PROPERTIES FOLDER "Tools")
+ 
+-install(TARGETS MiniBrowser DESTINATION "${EXEC_INSTALL_DIR}")
++install(TARGETS MiniBrowser DESTINATION "${LIBEXEC_INSTALL_DIR}")
+Index: webkitgtk/Source/cmake/OptionsGTK.cmake
+===================================================================
+--- webkitgtk.orig/Source/cmake/OptionsGTK.cmake
++++ webkitgtk/Source/cmake/OptionsGTK.cmake
+@@ -114,7 +114,7 @@ if (DEVELOPER_MODE)
+     WEBKIT_OPTION_DEFAULT_PORT_VALUE(ENABLE_MINIBROWSER PUBLIC ON)
+     WEBKIT_OPTION_DEFAULT_PORT_VALUE(ENABLE_API_TESTS PRIVATE ON)
+ else ()
+-    WEBKIT_OPTION_DEFAULT_PORT_VALUE(ENABLE_MINIBROWSER PUBLIC OFF)
++    WEBKIT_OPTION_DEFAULT_PORT_VALUE(ENABLE_MINIBROWSER PUBLIC ON)
+     WEBKIT_OPTION_DEFAULT_PORT_VALUE(ENABLE_API_TESTS PRIVATE OFF)
+     if (NOT CMAKE_SYSTEM_NAME MATCHES "Darwin")
+         set(WebKit2_VERSION_SCRIPT "-Wl,--version-script,${CMAKE_MODULE_PATH}/gtksymbols.filter")

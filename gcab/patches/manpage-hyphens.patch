@@ -1,0 +1,38 @@
+Description: Fix hyphens in the manpage
+Author: Stephen Kitt <steve@sk2.org>
+
+--- a/gcab.1.in
++++ b/gcab.1.in
+@@ -9,25 +9,25 @@
+ Create the cabinet file CABFILE from the list of FILES.
+ .SH OPTIONS
+ .TP
+-\fB\-c, --create\fR
++\fB\-c, \-\-create\fR
+ create a new cabinet archive
+ .TP
+-\fB\-x, --extract\fR
++\fB\-x, \-\-extract\fR
+ extract files from a cabinet archive
+ .TP
+-\fB\-t, --list\fR
++\fB\-t, \-\-list\fR
+ list files of a cabinet archive
+ .TP
+-\fB\-n, --nopath\fR
++\fB\-n, \-\-nopath\fR
+ create files without pathnames
+ .TP
+-\fB\-C, --directory DIR\fR
++\fB\-C, \-\-directory DIR\fR
+ change or extract to directory DIR
+ .TP
+-\fB\-v, --verbose\fR
++\fB\-v, \-\-verbose\fR
+ verbosely list files processed
+ .TP
+-\fB\-z, --zip\fR
++\fB\-z, \-\-zip\fR
+ use zip compression
+ .SH AUTHOR
+ Written by Marc-André Lureau <marcandre.lureau@gmail.com>.

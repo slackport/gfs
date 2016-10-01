@@ -1,0 +1,13 @@
+diff --git a/src/mcd-account-connection.c b/src/mcd-account-connection.c
+index 09b3a21..327514d 100644
+--- a/src/mcd-account-connection.c
++++ b/src/mcd-account-connection.c
+@@ -101,7 +101,7 @@ mcd_account_connection_proceed_with_reason (McdAccount *account,
+     if (success)
+     {
+         if (mcd_connectivity_monitor_is_online (
+-              mcd_account_get_connectivity_monitor (account)))
++              mcd_account_get_connectivity_monitor (account)) || _mcd_account_needs_dispatch (account))
+         {
+             DEBUG ("%s wants to connect and we're online - go for it",
+                 mcd_account_get_unique_name (account));

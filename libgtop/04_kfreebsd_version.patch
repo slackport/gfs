@@ -1,0 +1,21 @@
+From: Steven Chamberlain <steven@pyro.eu.org>
+Date: Mon, 15 Jun 2015 17:09:49 +0100
+
+Support GNU/kFreeBSD by using __FreeBSD_kernel_version here,
+rather than simply __FreeBSD_version (which is only defined in
+FreeBSD itself).
+
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=788709
+--- a/sysdeps/freebsd/open.c
++++ b/sysdeps/freebsd/open.c
+@@ -43,6 +43,10 @@
+ 	server->real_ncpu = ncpus - 1;
+ 	server->ncpu = MIN(GLIBTOP_NCPU - 1, server->real_ncpu);
+ 
++#if defined(__FreeBSD__)
+ 	server->os_version_code = __FreeBSD_version;
++#else
++	server->os_version_code = __FreeBSD_kernel_version;
++#endif
+ 
+ }

@@ -1,0 +1,36 @@
+Index: gnome-menus-3.13.3/layout/gnome-applications.menu
+===================================================================
+--- gnome-menus-3.13.3.orig/layout/gnome-applications.menu	2014-11-30 14:27:37.140211890 +0100
++++ gnome-menus-3.13.3/layout/gnome-applications.menu	2014-11-30 14:28:01.619840917 +0100
+@@ -54,7 +54,6 @@
+       <Filename>yelp.desktop</Filename>
+ 
+       <!-- Exclude Sundry items -->
+-      <Filename>alacarte.desktop</Filename>
+     </Exclude>
+   </Menu> <!-- End Accessories -->
+ 
+@@ -306,7 +305,6 @@
+     <Name>Sundry</Name>
+     <Directory>X-GNOME-Sundry.directory</Directory>
+     <Include>
+-      <Filename>alacarte.desktop</Filename>
+       <Filename>authconfig.desktop</Filename>
+       <Filename>dconf-editor.desktop</Filename>
+       <Filename>fedora-release-notes.desktop</Filename>
+@@ -383,7 +381,6 @@
+             <Or>
+               <Category>System</Category>
+               <Category>X-GNOME-Settings-Panel</Category>
+-              <Filename>alacarte.desktop</Filename>
+               <Filename>caribou.desktop</Filename>
+               <Filename>dconf-editor.desktop</Filename>
+               <Filename>fedora-im-chooser.desktop</Filename>
+@@ -439,7 +436,6 @@
+           <Not>
+             <Or>
+               <Category>X-GNOME-Settings-Panel</Category>
+-              <Filename>alacarte.desktop</Filename>
+               <Filename>caribou.desktop</Filename>
+               <Filename>dconf-editor.desktop</Filename>
+               <Filename>fedora-im-chooser.desktop</Filename>

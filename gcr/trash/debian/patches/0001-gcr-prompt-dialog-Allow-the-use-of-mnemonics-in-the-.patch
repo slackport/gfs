@@ -1,0 +1,30 @@
+From 218b6758f3b1a88b2c2d9a1ad4eb60527e2da274 Mon Sep 17 00:00:00 2001
+From: Iain Lane <iain@orangesquash.org.uk>
+Date: Mon, 13 Jul 2015 14:16:03 +0100
+Subject: [PATCH] gcr-prompt-dialog: Allow the use of mnemonics in the choice
+ label
+
+pinentry-gnome3 tries to use this, but gets an ugly "_Save in password
+manager" instead.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=752328
+---
+ ui/gcr-prompt-dialog.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ui/gcr-prompt-dialog.c b/ui/gcr-prompt-dialog.c
+index 48088d7..0adddf0 100644
+--- a/ui/gcr-prompt-dialog.c
++++ b/ui/gcr-prompt-dialog.c
+@@ -610,7 +610,7 @@ gcr_prompt_dialog_constructed (GObject *obj)
+ 	gtk_widget_show (widget);
+ 
+ 	/* The checkbox */
+-	widget = gtk_check_button_new ();
++	widget = g_object_new (GTK_TYPE_CHECK_BUTTON, "use-underline", TRUE, NULL);
+ 	g_object_bind_property (self, "choice-label", widget, "label", G_BINDING_DEFAULT);
+ 	g_object_bind_property (self, "choice-visible", widget, "visible", G_BINDING_DEFAULT);
+ 	g_object_bind_property (self, "choice-chosen", widget, "active", G_BINDING_BIDIRECTIONAL);
+-- 
+2.1.4
+

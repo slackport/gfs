@@ -1,0 +1,30 @@
+From: Beniamino Galvani <bgalvani@redhat.com>
+Date: Fri, 13 May 2016 11:06:12 +0200
+Subject: wireless-security: return error on eap_method_validate_filepicker()
+ failure
+
+(cherry picked from commit 2af8361c71416c61b96d01423b1a95d3bc692f9d)
+---
+ src/wireless-security/eap-method.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/src/wireless-security/eap-method.c b/src/wireless-security/eap-method.c
+index 3c7b454..36e34ae 100644
+--- a/src/wireless-security/eap-method.c
++++ b/src/wireless-security/eap-method.c
+@@ -226,8 +226,13 @@ eap_method_validate_filepicker (GtkBuilder *builder,
+ 	widget = GTK_WIDGET (gtk_builder_get_object (builder, name));
+ 	g_assert (widget);
+ 	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (widget));
+-	if (!filename)
+-		return (item_type == TYPE_CA_CERT) ? TRUE : FALSE;
++	if (!filename) {
++		if (item_type == TYPE_CA_CERT)
++			success = TRUE;
++		else
++			g_set_error_literal (error, NMA_ERROR, NMA_ERROR_GENERIC, _("no file selected"));
++		goto out;
++	}
+ 
+ 	if (!g_file_test (filename, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+ 		goto out;

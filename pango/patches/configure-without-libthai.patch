@@ -1,0 +1,34 @@
+From: Andreas Henriksson <andreas@fatal.se>
+Subject: Add configure flag --without-libthai
+
+Make it possible to avoid enabling libthai which is needed
+for udeb builds, since libthai has no udeb (now).
+Maybe libthai should grow an udeb and this patch could
+be dropped....
+
+Bug-Debian: http://bugs.debian.org/800356
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -459,6 +459,12 @@
+ #
+ # Checks for LibThai
+ #
++AC_ARG_WITH([libthai],
++              AC_HELP_STRING([--without-libthai],
++                             [Ignore presence of libthai and disable it]))
++
++if test "x$with_libthai" != "xno"; then
++
+ LIBTHAI_REQUIRED_VERSION=0.1.9
+ have_libthai=false
+ PKG_CHECK_MODULES(LIBTHAI, libthai >= $LIBTHAI_REQUIRED_VERSION, have_libthai=true, :)
+@@ -466,6 +472,8 @@
+ 	AC_DEFINE(HAVE_LIBTHAI, 1, [Whether libthai is available])
+ fi
+ 
++fi
++
+ #
+ # Checks for GObject Introspection
+ #

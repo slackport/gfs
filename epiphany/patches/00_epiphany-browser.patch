@@ -1,0 +1,13 @@
+Index: epiphany-3.20.3/configure.ac
+===================================================================
+--- epiphany-3.20.3.orig/configure.ac	2016-06-28 23:57:04.648599978 +0200
++++ epiphany-3.20.3/configure.ac	2016-06-28 23:57:04.636599761 +0200
+@@ -19,7 +19,7 @@
+ m4_define([epiphany_version_micro],[3])
+ m4_define([epiphany_version],[epiphany_version_major.epiphany_version_minor.epiphany_version_micro])
+ 
+-AC_INIT([GNOME Web Browser],[epiphany_version],[http://bugzilla.gnome.org/enter_bug.cgi?product=epiphany],[epiphany])
++AC_INIT([GNOME Web Browser],[epiphany_version],[http://bugzilla.gnome.org/enter_bug.cgi?product=epiphany],[epiphany-browser])
+ AX_IS_RELEASE([git-directory])
+ 
+ AC_PREREQ([2.59])

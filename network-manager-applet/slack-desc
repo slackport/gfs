@@ -1,0 +1,15 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+                      |-----handy-ruler------------------------------------------------------|
+network-manager-applet: NetworkManager Applet
+network-manager-applet:
+network-manager-applet: The NetworkManager Applet provides a tool and a panel applet used to
+network-manager-applet: configure wired and wireless network connections through GUI. It's
+network-manager-applet: designed for use with any desktop environment that uses GTK+ like
+network-manager-applet: Xfce and LXDE.
+network-manager-applet:

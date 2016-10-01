@@ -1,0 +1,126 @@
+From c2bb701afab3c41cedf212ab4107e09584a6dabf Mon Sep 17 00:00:00 2001
+From: Parag Nemade <pnemade@redhat.com>
+Date: Thu, 16 Jun 2016 11:30:28 +0530
+Subject: Add missing python3 compatibility
+
+https://bugzilla.gnome.org/show_bug.cgi?id=767664
+---
+ caribou/antler/keyboard_view.py        | 4 ++--
+ caribou/antler/main.py                 | 3 +++
+ caribou/antler/window.py               | 4 +++-
+ caribou/settings/preferences_window.py | 1 +
+ caribou/settings/settings_manager.py   | 4 ++--
+ tools/convert_cldr.py                  | 4 ++--
+ 6 files changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/caribou/antler/keyboard_view.py b/caribou/antler/keyboard_view.py
+index 151782c..d90ccc9 100644
+--- a/caribou/antler/keyboard_view.py
++++ b/caribou/antler/keyboard_view.py
+@@ -193,7 +193,7 @@ class AntlerLayout(Gtk.Box):
+ 
+             for i, key in enumerate(col):
+                 align = key.props.align
+-                if not alignboxes.has_key(align):
++                if align not in alignboxes:
+                     alignbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+                     alignbox.set_spacing(self._spacing)
+                     alignboxes[align] = alignbox
+@@ -288,7 +288,7 @@ class AntlerKeyboardView(Gtk.Notebook):
+ 
+     def _load_style(self, provider, filename, search_path):
+         spath = search_path[:]
+-        if os.environ.has_key("ANTLER_THEME_PATH"):
++        if "ANTLER_THEME_PATH" in os.environ:
+             spath.insert(0, os.environ["ANTLER_THEME_PATH"])
+ 
+         for directory in spath:
+diff --git a/caribou/antler/main.py b/caribou/antler/main.py
+index cf13bad..3a558d2 100644
+--- a/caribou/antler/main.py
++++ b/caribou/antler/main.py
+@@ -1,3 +1,6 @@
++import gi
++gi.require_version('Caribou', '1.0')
++gi.require_version('Gtk', '3.0')
+ from gi.repository import Caribou, GLib, GObject, Gtk
+ from .window import AntlerWindowEntry
+ from .keyboard_view import AntlerKeyboardView
+diff --git a/caribou/antler/window.py b/caribou/antler/window.py
+index 0061040..980869a 100644
+--- a/caribou/antler/window.py
++++ b/caribou/antler/window.py
+@@ -20,11 +20,13 @@
+ # along with this program; if not, write to the Free Software Foundation,
+ # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ 
++import gi
++gi.require_version('Clutter', '1.0')
+ from gi.repository import Gtk
+ from gi.repository import Gdk
+ from gi.repository import GObject
+ from gi.repository import Clutter
+-from antler_settings import AntlerSettings
++from .antler_settings import AntlerSettings
+ from math import sqrt
+ import os
+ import sys
+diff --git a/caribou/settings/preferences_window.py b/caribou/settings/preferences_window.py
+index 350ab59..c761c9d 100644
+--- a/caribou/settings/preferences_window.py
++++ b/caribou/settings/preferences_window.py
+@@ -20,6 +20,7 @@
+ 
+ from caribou.settings.setting_types import *
+ 
++import gi
+ from gi.repository import GObject
+ gi.require_version('Gtk', '3.0')
+ gi.require_version('Gdk', '3.0')
+diff --git a/caribou/settings/settings_manager.py b/caribou/settings/settings_manager.py
+index 062a278..cf8630a 100644
+--- a/caribou/settings/settings_manager.py
++++ b/caribou/settings/settings_manager.py
+@@ -19,7 +19,7 @@ class SettingsManager(object):
+             raise AttributeError("no setting named '%s'" % name)
+ 
+     def _map_settings(self, setting):
+-        if self._settings_map.has_key(setting.name):
++        if setting.name in self._settings_map:
+             raise ValueError("more than one setting has the name '%s'" % setting.name)
+         self._settings_map[setting.name] = setting
+         
+@@ -27,7 +27,7 @@ class SettingsManager(object):
+             self._map_settings(s)
+ 
+     def _setup_settings(self):
+-        for setting in self._settings_map.values():
++        for setting in list(self._settings_map.values()):
+             if isinstance(setting, SettingsGroup):
+                 continue
+             setting.value = \
+diff --git a/tools/convert_cldr.py b/tools/convert_cldr.py
+index cd65754..59d699e 100755
+--- a/tools/convert_cldr.py
++++ b/tools/convert_cldr.py
+@@ -13,7 +13,7 @@ def parse_single_key(value):
+     uc = 0
+     if hasattr(__builtins__, 'unichr'):
+         def unescape(m):
+-            return unichr(int(m.group(1), 16))
++            return chr(int(m.group(1), 16))
+     else:
+         def unescape(m):
+             return chr(int(m.group(1), 16))
+@@ -66,7 +66,7 @@ def convert(source, tree):
+                 for value in longPress.split(' '):
+                     subkey = parse_single_key(value)
+                     key.append(subkey)
+-        for k, v in sorted(rows.items(), key=lambda x: x[0], reverse=True):
++        for k, v in sorted(list(rows.items()), key=lambda x: x[0], reverse=True):
+             row = Element('row')
+             for key in sorted(v, key=lambda x: x):
+                 row.append(key[1])
+-- 
+cgit v0.12
+

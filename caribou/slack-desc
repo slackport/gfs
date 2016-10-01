@@ -1,0 +1,15 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+caribou: Caribou
+caribou:
+caribou: Caribou is a text entry and UI navigation application being developed
+caribou: as an alternative to the Gnome On-screen Keyboard. The overarching
+caribou: goal for Caribou is to create a usable solution for people whose
+caribou: primary way of accessing a computer is a switch device.
+caribou:

@@ -1,0 +1,52 @@
+# DP: Modules/Setup.dist: patches to build some extensions statically
+
+Index: b/Modules/Setup.dist
+===================================================================
+--- a/Modules/Setup.dist
++++ b/Modules/Setup.dist
+@@ -175,7 +175,7 @@ _symtable symtablemodule.c
+ #_weakref _weakref.c	# basic weak reference support
+ #_testcapi _testcapimodule.c    # Python C API test module
+ #_random _randommodule.c	# Random number generator
+-#_elementtree -I$(srcdir)/Modules/expat -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI _elementtree.c	# elementtree accelerator
++#_elementtree _elementtree.c -lexpat	# elementtree accelerator
+ #_pickle _pickle.c	# pickle accelerator
+ #_datetime _datetimemodule.c	# datetime accelerator
+ #_bisect _bisectmodule.c	# Bisection algorithms
+@@ -204,10 +204,7 @@ _symtable symtablemodule.c
+ 
+ # Socket module helper for SSL support; you must comment out the other
+ # socket line above, and possibly edit the SSL variable:
+-#SSL=/usr/local/ssl
+-#_ssl _ssl.c \
+-#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+-#	-L$(SSL)/lib -lssl -lcrypto
++#_ssl _ssl.c -lssl -lcrypto
+ 
+ # The crypt module is now disabled by default because it breaks builds
+ # on many systems (where -lcrypt is needed), e.g. Linux (I believe).
+@@ -249,6 +246,7 @@ _symtable symtablemodule.c
+ #_sha256 sha256module.c
+ #_sha512 sha512module.c
+ 
++#_hashlib _hashopenssl.c -lssl -lcrypto
+ 
+ # The _tkinter module.
+ #
+@@ -337,6 +335,7 @@ _symtable symtablemodule.c
+ # Fred Drake's interface to the Python parser
+ #parser parsermodule.c
+ 
++#_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c _ctypes/malloc_closure.c -lffi
+ 
+ # Lee Busby's SIGFPE modules.
+ # The library to link fpectl with is platform specific.
+@@ -371,7 +370,7 @@ _symtable symtablemodule.c
+ #
+ # More information on Expat can be found at www.libexpat.org.
+ #
+-#pyexpat expat/xmlparse.c expat/xmlrole.c expat/xmltok.c pyexpat.c -I$(srcdir)/Modules/expat -DHAVE_EXPAT_CONFIG_H -DUSE_PYEXPAT_CAPI
++#pyexpat pyexpat.c -lexpat
+ 
+ # Hye-Shik Chang's CJKCodecs
+ 

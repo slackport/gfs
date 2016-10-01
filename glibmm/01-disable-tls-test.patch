@@ -1,0 +1,25 @@
+Description: Disable giomm_tls_client test
+ This test requires network access which is not guaranteed on buildds.
+Author: Michael Biebl <biebl@debian.org>
+Index: glibmm-2.46.1/tests/Makefile.am
+===================================================================
+--- glibmm-2.46.1.orig/tests/Makefile.am	2015-09-24 17:02:10.385275519 +0200
++++ glibmm-2.46.1/tests/Makefile.am	2015-09-24 17:02:10.381275555 +0200
+@@ -23,7 +23,6 @@
+ 	giomm_memoryinputstream/test			\
+ 	giomm_simple/test			\
+ 	giomm_asyncresult_sourceobject/test	\
+-	giomm_tls_client/test			\
+ 	glibmm_btree/test			\
+ 	glibmm_base64/test			\
+ 	glibmm_date/test			\
+@@ -80,9 +79,6 @@
+ giomm_asyncresult_sourceobject_test_SOURCES  = giomm_asyncresult_sourceobject/main.cc
+ giomm_asyncresult_sourceobject_test_LDADD    = $(giomm_ldadd)
+ 
+-giomm_tls_client_test_SOURCES                = giomm_tls_client/main.cc
+-giomm_tls_client_test_LDADD                  = $(giomm_ldadd)
+-
+ glibmm_base64_test_SOURCES               = glibmm_base64/main.cc
+ glibmm_btree_test_SOURCES                = glibmm_btree/main.cc
+ glibmm_buildfilename_test_SOURCES        = glibmm_buildfilename/main.cc

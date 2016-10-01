@@ -1,0 +1,13 @@
+Index: gnome-menus-3.13.3/po/nl.po
+===================================================================
+--- gnome-menus-3.13.3.orig/po/nl.po	2013-03-26 21:04:14.000000000 +0100
++++ gnome-menus-3.13.3/po/nl.po	2015-03-26 20:42:24.569861793 +0100
+@@ -92,7 +92,7 @@ msgstr "Toegankelijkheidsinstellingen"
+ 
+ #: ../desktop-directories/Utility.directory.in.h:1
+ msgid "Accessories"
+-msgstr "Hulpmiddelen"
++msgstr "Accessoires"
+ 
+ #: ../desktop-directories/Utility.directory.in.h:2
+ msgid "Desktop accessories"

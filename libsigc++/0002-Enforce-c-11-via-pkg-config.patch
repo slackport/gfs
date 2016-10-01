@@ -1,0 +1,23 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Wed, 21 Oct 2015 22:20:11 +0200
+Subject: Enforce c++11 via pkg-config
+
+libsigc++2.0 uses C++11 features in the header files it exports.
+As long as GCC does not yet default to C++11, return -std=c++11 via
+pkg-config --cflags.
+
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=800399
+---
+ sigc++.pc.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sigc++.pc.in b/sigc++.pc.in
+index c03a1dd..5d8bc63 100644
+--- a/sigc++.pc.in
++++ b/sigc++.pc.in
+@@ -15,4 +15,4 @@ Description: Typesafe signal and callback system for C++
+ Version: @PACKAGE_VERSION@
+ URL: http://libsigc.sourceforge.net/
+ Libs: -L${libdir} -lsigc-@SIGCXX_API_VERSION@
+-Cflags: -I${includedir}/sigc++-@SIGCXX_API_VERSION@ -I${libdir}/sigc++-@SIGCXX_API_VERSION@/include
++Cflags: -I${includedir}/sigc++-@SIGCXX_API_VERSION@ -I${libdir}/sigc++-@SIGCXX_API_VERSION@/include -std=c++11

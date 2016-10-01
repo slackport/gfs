@@ -1,0 +1,33 @@
+From 736869930e1542537f52f5e011ce9cb86116ee1c Mon Sep 17 00:00:00 2001
+From: Alfonso Sanchez-Beato <alfonso.sanchez-beato@canonical.com>
+Date: Mon, 29 Sep 2014 17:01:01 +0200
+Subject: [PATCH] riff: Add input buffer size to GstCaps
+
+Add dwSuggestedBufferSize AVI header field to the capabilities
+structure, so it is available for the decoder.
+
+Bug-Upstream: https://bugzilla.gnome.org/show_bug.cgi?id=737599
+
+---
+ gst-libs/gst/riff/riff-media.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/gst-libs/gst/riff/riff-media.c b/gst-libs/gst/riff/riff-media.c
+index e4d877e..a86401e 100644
+--- a/gst-libs/gst/riff/riff-media.c
++++ b/gst-libs/gst/riff/riff-media.c
+@@ -919,6 +919,11 @@ gst_riff_create_video_caps (guint32 codec_fcc,
+   if (strh != NULL) {
+     gst_caps_set_simple (caps, "framerate", GST_TYPE_FRACTION,
+         strh->rate, strh->scale, NULL);
++
++    if (strh->bufsize != 0)
++      gst_caps_set_simple (caps, "max-input-size", G_TYPE_INT,
++          strh->bufsize, NULL);
++
+   } else {
+     gst_caps_set_simple (caps,
+         "framerate", GST_TYPE_FRACTION_RANGE, 0, 1, G_MAXINT, 1, NULL);
+-- 
+2.1.0
+

@@ -1,0 +1,93 @@
+From 838bb888d80f75fb29653656c571f9f32d0255f0 Mon Sep 17 00:00:00 2001
+From: Iain Lane <iain.lane@canonical.com>
+Date: Fri, 2 Oct 2015 15:19:23 +0100
+Subject: [PATCH] Don't use the same test name for multiple tests
+
+GLib 2.46.0 doesn't allow this any more, and so the testsuite fails.
+
+https://bugs.freedesktop.org/show_bug.cgi?id=92245
+
+---
+ tests/dbus/account.c             | 10 +++++-----
+ tests/dbus/cm.c                  |  2 +-
+ tests/dbus/contact-list-client.c |  2 +-
+ tests/dbus/contact-lists.c       |  2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/tests/dbus/account.c b/tests/dbus/account.c
+index 1df043a..8fa7514 100644
+--- a/tests/dbus/account.c
++++ b/tests/dbus/account.c
+@@ -980,7 +980,7 @@ main (int argc,
+ 
+   g_test_add ("/account/reconnect", Test, NULL, setup_service, test_reconnect,
+       teardown_service);
+-  g_test_add ("/account/reconnect", Test, "vardict", setup_service,
++  g_test_add ("/account/reconnect/vardict", Test, "vardict", setup_service,
+       test_reconnect, teardown_service);
+ 
+   g_test_add ("/account/prepare/success", Test, NULL, setup_service,
+@@ -989,17 +989,17 @@ main (int argc,
+   g_test_add ("/account/connection", Test, NULL, setup_service,
+               test_connection, teardown_service);
+ 
+-  g_test_add ("/account/storage", Test, "first", setup_service, test_storage,
++  g_test_add ("/account/storage/first", Test, "first", setup_service, test_storage,
+       teardown_service);
+-  g_test_add ("/account/storage", Test, "later", setup_service, test_storage,
++  g_test_add ("/account/storage/later", Test, "later", setup_service, test_storage,
+       teardown_service);
+ 
+   g_test_add ("/account/avatar", Test, NULL, setup_service, test_avatar,
+       teardown_service);
+ 
+-  g_test_add ("/account/addressing", Test, "first", setup_service,
++  g_test_add ("/account/addressing-first", Test, "first", setup_service,
+       test_addressing, teardown_service);
+-  g_test_add ("/account/addressing", Test, "later", setup_service,
++  g_test_add ("/account/addressing-later", Test, "later", setup_service,
+       test_addressing, teardown_service);
+ 
+   return tp_tests_run_with_bus ();
+diff --git a/tests/dbus/cm.c b/tests/dbus/cm.c
+index ad42854..c386d60 100644
+--- a/tests/dbus/cm.c
++++ b/tests/dbus/cm.c
+@@ -1187,7 +1187,7 @@ main (int argc,
+ 
+   g_test_add ("/cm/list", Test, GINT_TO_POINTER (0),
+       setup, test_list, teardown);
+-  g_test_add ("/cm/list", Test, GINT_TO_POINTER (USE_OLD_LIST),
++  g_test_add ("/cm/list/use-old-list", Test, GINT_TO_POINTER (USE_OLD_LIST),
+       setup, test_list, teardown);
+ 
+   return tp_tests_run_with_bus ();
+diff --git a/tests/dbus/contact-list-client.c b/tests/dbus/contact-list-client.c
+index a3f878a..bb4895d 100644
+--- a/tests/dbus/contact-list-client.c
++++ b/tests/dbus/contact-list-client.c
+@@ -577,7 +577,7 @@ main (int argc,
+ 
+   g_test_add ("/contact-list-client/contact-list/properties", Test,
+       GUINT_TO_POINTER (FALSE), setup, test_contact_list_properties, teardown);
+-  g_test_add ("/contact-list-client/contact-list/properties", Test,
++  g_test_add ("/contact-list-client/contact-list/properties/props-only", Test,
+       GUINT_TO_POINTER (TRUE), setup, test_contact_list_properties, teardown);
+ 
+   return tp_tests_run_with_bus ();
+diff --git a/tests/dbus/contact-lists.c b/tests/dbus/contact-lists.c
+index 43ab262..5e88a18 100644
+--- a/tests/dbus/contact-lists.c
++++ b/tests/dbus/contact-lists.c
+@@ -2788,7 +2788,7 @@ main (int argc,
+ 
+   g_test_add ("/contact-lists/cancelled-publish-request",
+       Test, NULL, setup, test_cancelled_publish_request, teardown);
+-  g_test_add ("/contact-lists/cancelled-publish-request",
++  g_test_add ("/contact-lists/cancelled-publish-request/remove-after",
+       Test, "remove-after", setup, test_cancelled_publish_request, teardown);
+ 
+   g_test_add ("/contact-lists/add-to-stored",
+-- 
+2.5.0
+

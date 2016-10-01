@@ -1,0 +1,85 @@
+# DP: Use /etc/lsb-release to identify the platform.
+
+Index: b/Lib/platform.py
+===================================================================
+--- a/Lib/platform.py
++++ b/Lib/platform.py
+@@ -268,7 +268,7 @@ _release_version = re.compile(r'([^0-9]+
+ _supported_dists = (
+     'SuSE', 'debian', 'fedora', 'redhat', 'centos',
+     'mandrake', 'mandriva', 'rocks', 'slackware', 'yellowdog', 'gentoo',
+-    'UnitedLinux', 'turbolinux', 'arch', 'mageia')
++    'UnitedLinux', 'turbolinux', 'arch', 'mageia', 'Ubuntu')
+ 
+ def _parse_release_file(firstline):
+ 
+@@ -297,6 +297,10 @@ def _parse_release_file(firstline):
+             id = l[1]
+     return '', version, id
+ 
++_distributor_id_file_re = re.compile("(?:DISTRIB_ID\s*=)\s*(.*)", re.I)
++_release_file_re = re.compile("(?:DISTRIB_RELEASE\s*=)\s*(.*)", re.I)
++_codename_file_re = re.compile("(?:DISTRIB_CODENAME\s*=)\s*(.*)", re.I)
++
+ def linux_distribution(distname='', version='', id='',
+ 
+                        supported_dists=_supported_dists,
+@@ -329,6 +333,25 @@ def _linux_distribution(distname, versio
+         args given as parameters.
+ 
+     """
++    # check for the Debian/Ubuntu /etc/lsb-release file first, needed so
++    # that the distribution doesn't get identified as Debian.
++    try:
++        with open("/etc/lsb-release", "r") as etclsbrel:
++            for line in etclsbrel:
++                m = _distributor_id_file_re.search(line)
++                if m:
++                    _u_distname = m.group(1).strip()
++                m = _release_file_re.search(line)
++                if m:
++                    _u_version = m.group(1).strip()
++                m = _codename_file_re.search(line)
++                if m:
++                    _u_id = m.group(1).strip()
++            if _u_distname and _u_version:
++                return (_u_distname, _u_version, _u_id)
++    except (EnvironmentError, UnboundLocalError):
++            pass
++
+     try:
+         etc = os.listdir(_UNIXCONFDIR)
+     except OSError:
+Index: b/Lib/test/test_platform.py
+===================================================================
+--- a/Lib/test/test_platform.py
++++ b/Lib/test/test_platform.py
+@@ -320,28 +320,6 @@ class PlatformTest(unittest.TestCase):
+                     returncode = ret >> 8
+                 self.assertEqual(returncode, len(data))
+ 
+-    def test_linux_distribution_encoding(self):
+-        # Issue #17429
+-        with tempfile.TemporaryDirectory() as tempdir:
+-            filename = os.path.join(tempdir, 'fedora-release')
+-            with open(filename, 'w', encoding='utf-8') as f:
+-                f.write('Fedora release 19 (Schr\xf6dinger\u2019s Cat)\n')
+-
+-            with mock.patch('platform._UNIXCONFDIR', tempdir):
+-                with warnings.catch_warnings():
+-                    warnings.filterwarnings(
+-                        'ignore',
+-                        'dist\(\) and linux_distribution\(\) '
+-                        'functions are deprecated .*',
+-                        PendingDeprecationWarning,
+-                    )
+-                    distname, version, distid = platform.linux_distribution()
+-
+-                self.assertEqual(distname, 'Fedora')
+-            self.assertEqual(version, '19')
+-            self.assertEqual(distid, 'Schr\xf6dinger\u2019s Cat')
+-
+-
+ class DeprecationTest(unittest.TestCase):
+ 
+     def test_dist_deprecation(self):

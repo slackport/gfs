@@ -1,0 +1,30 @@
+Description: GtkCombo of the address for traceroute, port scan, and whois should not extend
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=647895
+Index: gnome-nettool-3.8.1/data/gnome-nettool.ui
+===================================================================
+--- gnome-nettool-3.8.1.orig/data/gnome-nettool.ui	2013-06-21 03:18:12.746143421 +0200
++++ gnome-nettool-3.8.1/data/gnome-nettool.ui	2013-06-21 03:18:12.738143189 +0200
+@@ -1471,6 +1471,7 @@
+                     <property name="visible">True</property>
+                     <property name="border_width">6</property>
+                     <property name="spacing">12</property>
++                    <property name="expand">False</property>
+                     <child>
+                       <object class="GtkHBox" id="hbox43">
+                         <property name="visible">True</property>
+@@ -1976,6 +1977,7 @@
+                     <property name="visible">True</property>
+                     <property name="border_width">6</property>
+                     <property name="spacing">12</property>
++                    <property name="expand">False</property>
+                     <child>
+                       <object class="GtkTable" id="table7">
+                         <property name="visible">True</property>
+@@ -2177,6 +2179,7 @@
+                     <property name="visible">True</property>
+                     <property name="border_width">6</property>
+                     <property name="spacing">12</property>
++                    <property name="expand">False</property>
+                     <child>
+                       <object class="GtkTable" id="table8">
+                         <property name="visible">True</property>

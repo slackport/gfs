@@ -1,0 +1,39 @@
+From: Michael Biebl <biebl@debian.org>
+Date: Sun, 24 May 2015 15:06:02 +0200
+Subject: Add missing geeutils.vapi
+
+This file is missing in the tarball but is required if we want to
+rebuild the C source files.
+
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=749781
+---
+ utils/geeutils.vapi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+ create mode 100644 utils/geeutils.vapi
+
+diff --git a/utils/geeutils.vapi b/utils/geeutils.vapi
+new file mode 100644
+index 0000000..7b1472d
+--- /dev/null
++++ b/utils/geeutils.vapi
+@@ -0,0 +1,20 @@
++namespace Gee {
++	namespace Utils {
++		namespace Assume {
++			[CCode (cheader_filename = "assume.h", cname = "gee_utils_assume")]
++			public void assume(bool cond);
++		}
++		namespace Async {
++			[CCode (cheader_filename = "async.h")]
++			public async void yield_and_unlock (GLib.Mutex mutex);
++		}
++		namespace Free {
++			[CCode (cheader_filename = "free.h")]
++			public GLib.DestroyNotify? get_destroy_notify<G> ();
++		}
++		namespace Misc {
++			[CCode (cheader_filename = "misc.h", simple_generics = true)]
++			public void unused<G> (G unused);
++		}
++	}
++}

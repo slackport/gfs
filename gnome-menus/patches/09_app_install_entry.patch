@@ -1,0 +1,23 @@
+Description: Include Software Center in menus
+
+Index: b/layout/gnome-applications.menu
+===================================================================
+--- a/layout/gnome-applications.menu
++++ b/layout/gnome-applications.menu
+@@ -433,4 +433,16 @@
+      <Merge type="files" />
+    </Layout>
+ 
++<Include>
++  <Filename>ubuntu-software-center.desktop</Filename>
++</Include>
++
++<!-- Separator between menus and gnome-app-install -->
++<Layout>
++  <Merge type="menus"/>
++  <Merge type="files"/>
++  <Separator/>
++  <Filename>ubuntu-software-center.desktop</Filename>
++</Layout>
++
+ </Menu> <!-- End Applications -->

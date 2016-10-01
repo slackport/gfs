@@ -1,0 +1,36 @@
+Index: epiphany-browser-3.20.2/data/default-bookmarks.rdf.in
+===================================================================
+--- epiphany-browser-3.20.2.orig/data/default-bookmarks.rdf.in
++++ epiphany-browser-3.20.2/data/default-bookmarks.rdf.in
+@@ -6,7 +6,6 @@
+     <items>
+       <rdf:Seq>
+         <rdf:li rdf:resource="https://www.gnome.org/"/>
+-        <rdf:li rdf:resource="https://webkit.org/"/>
+       </rdf:Seq>
+     </items>
+   </channel>
+@@ -14,8 +13,20 @@
+     <title>GNOME</title>
+     <link>https://www.gnome.org/</link>
+   </item>
+-  <item rdf:about="https://webkit.org/">
+-    <title>WebKit</title>
+-    <link>https://webkit.org/</link>
++  <item rdf:about="http://www.ubuntu.com/">
++    <_title>Ubuntu</_title>
++    <_link>http://www.ubuntu.com/</_link>
++  </item>
++  <item rdf:about="https://wiki.ubuntu.com/">
++    <_title>Ubuntu Wiki (community-edited website)</_title>
++    <_link>https://wiki.ubuntu.com/</_link>
++  </item>
++  <item rdf:about="https://answers.launchpad.net/ubuntu/+addquestion">
++    <_title>Make a Support Request to the Ubuntu Community</_title>
++    <_link>https://answers.launchpad.net/ubuntu/+addquestion</_link>
++  </item>
++  <item rdf:about="https://www.debian.org/">
++    <_title>Debian (Ubuntu is based on Debian)</_title>
++    <_link>https://www.debian.org/</_link>
+   </item>
+ </rdf:RDF>

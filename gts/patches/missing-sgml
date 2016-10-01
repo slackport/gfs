@@ -1,0 +1,132 @@
+Description: Adds gts-docs.sgml from darvs repository
+ The file was missing in the tarball, It was downloaded from:
+ http://gerris.dalembert.upmc.fr/darcs/gts-stable/doc/gts-docs.sgml
+Author: Stephan Popinet
+Last-Update: 2011-10-28
+
+--- /dev/null
++++ gts-0.7.6+darcs121130/doc/gts-docs.sgml
+@@ -0,0 +1,123 @@
++<!doctype book PUBLIC "-//OASIS//DTD DocBook V4.4//EN" [
++<!entity gts-Heaps SYSTEM "sgml/heaps.sgml">
++<!entity gts-Extended-Heaps SYSTEM "sgml/extended_heaps.sgml">
++<!entity gts-Fifo SYSTEM "sgml/fifo.sgml">
++<!entity gts-Vectors-and-matrices SYSTEM "sgml/matrices.sgml">
++<!entity gts-Points SYSTEM "sgml/points.sgml">
++<!entity gts-Vertices SYSTEM "sgml/vertices.sgml">
++<!entity gts-Kd-Trees SYSTEM "sgml/kd-Trees.sgml">
++<!entity gts-Segments SYSTEM "sgml/segments.sgml">
++<!entity gts-Edges SYSTEM "sgml/edges.sgml">
++<!entity gts-Bounding-boxes-trees SYSTEM "sgml/bb-trees.sgml">
++<!entity gts-Triangles SYSTEM "sgml/triangles.sgml">
++<!entity gts-Faces SYSTEM "sgml/faces.sgml">
++<!entity gts-Surfaces SYSTEM "sgml/surfaces.sgml">
++<!entity gts-Simplification SYSTEM "sgml/simplify.sgml">
++<!entity gts-Isosurfaces SYSTEM "sgml/iso.sgml">
++<!entity gts-Delaunay-and-constrained-Delaunay-triangulations SYSTEM "sgml/delaunay.sgml">
++<!entity gts-Boolean SYSTEM "sgml/boolean.sgml">
++<!entity gts-HSurface SYSTEM "sgml/hsurface.sgml">
++<!entity gts-PSurface SYSTEM "sgml/psurface.sgml">
++<!entity gts-Object SYSTEM "sgml/object.sgml">
++<!entity gts-misc SYSTEM "sgml/misc.sgml">
++<!entity gts-stats SYSTEM "sgml/stats.sgml">
++<!entity gts-Split SYSTEM "sgml/split.sgml">
++<!entity gts-HSplit SYSTEM "sgml/hsplit.sgml">
++<!entity gts-oocs SYSTEM "sgml/oocs.sgml">
++<!entity gts-Container SYSTEM "sgml/container.sgml">
++<!entity gts-Containee SYSTEM "sgml/containee.sgml">
++<!entity gts-Graph SYSTEM "sgml/graph.sgml">
++<!entity gts-WGraph SYSTEM "sgml/wgraph.sgml">
++<!entity gts-PGraph SYSTEM "sgml/pgraph.sgml">
++<!entity gts-Partition SYSTEM "sgml/partition.sgml">
++<!entity gts-Curvature SYSTEM "sgml/curvature.sgml">
++]>
++
++<book>
++  <bookinfo>
++    <title>GTS Library Reference Manual</title>
++  </bookinfo>
++
++  <chapter>
++    <title>Basic Macros, functions and data structures</title>
++      &gts-Heaps;
++      &gts-Extended-Heaps;
++      &gts-Fifo;
++      &gts-Vectors-and-matrices;
++      &gts-stats;
++      &gts-misc;
++  </chapter>
++  <chapter>
++    <title>Geometrical Object Hierarchy</title>
++    <para>
++    GTS uses a simple object system implemented in C which allows all
++    the basic paradigms of object-oriented programming: inheritance of
++    class members and virtual functions overloading in particular.
++    </para>
++    <para>
++    The class hierarchy is implemented via a hierarchy of nested C
++    structs and type casting. In order to avoid "wild" type casts
++    between objects belonging to incompatible classes, type casting is
++    done through macros which check if the conversion is valid. This
++    type checking is however relatively expensive and can be disabled
++    on production code by omitting the GTS_CHECK_CASTS define at
++    compile time.
++    </para>
++    <para>
++    The basic geometrical objects of GTS do not have any support for
++    attributes such as color, texture coordinates, material properties
++    etc... which may be of interest when using GTS for graphical
++    applications. This choice was made on purpose in order to keep GTS
++    as general as possible. Using object inheritance it should however
++    be easy to extend the base classes to fit your personal needs.
++    </para>
++    <para>
++    When destroying geometrical objects you must keep in mind their
++    geometrical relationships. Destroying a vertex also destroys all
++    the edges using this particular vertex, destroying an edge
++    destroys the triangles. Vertices, edges or faces not used by any
++    segment, triangle or surface respectively are considered to be
++    "floating" objects. When initially created all vertices, edges or
++    faces are floating. Destroying a segment, triangle or surface will
++    cause the destruction of any new floating vertex, edge or face.
++    </para>
++      &gts-Object;
++      &gts-Container;
++      &gts-Containee;
++      &gts-Points;
++      &gts-Vertices;
++      &gts-Segments;
++      &gts-Edges;
++      &gts-Triangles;
++      &gts-Faces;
++      &gts-Surfaces;
++  </chapter>
++  <chapter>
++    <title>Geometrical data structures</title>
++      &gts-Kd-Trees;
++      &gts-Bounding-boxes-trees;
++  </chapter>
++  <chapter>
++    <title>Surface operations</title>
++      &gts-Boolean;
++      &gts-Simplification;
++      &gts-oocs;
++      &gts-Isosurfaces;
++      &gts-Delaunay-and-constrained-Delaunay-triangulations;
++      &gts-Curvature;
++  </chapter>
++  <chapter>
++    <title>Progressive and Hierarchical surfaces</title>
++      &gts-Split;
++      &gts-PSurface;
++      &gts-HSplit;
++      &gts-HSurface;
++  </chapter>
++  <chapter>
++    <title>Graph and operations on graphs</title>
++      &gts-Graph;
++      &gts-WGraph;
++      &gts-PGraph;
++      &gts-Partition;
++  </chapter>
++</book>

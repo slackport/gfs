@@ -1,0 +1,147 @@
+--- a/server/miniupnp/miniupnpc.c
++++ b/server/miniupnp/miniupnpc.c
+@@ -13,7 +13,6 @@
+ #include <io.h>
+ #define snprintf _snprintf
+ #define strncasecmp memicmp
+-#define MAXHOSTNAMELEN 64
+ #else
+ #include <unistd.h>
+ #include <sys/socket.h>
+@@ -132,7 +131,7 @@
+                       char * buffer, int * bufsize)
+ {
+ 	struct sockaddr_in dest;
+-	char hostname[MAXHOSTNAMELEN+1];
++	char *hostname;
+ 	unsigned short port = 0;
+ 	char * path;
+ 	char soapact[128];
+@@ -206,7 +205,7 @@
+ 		strncpy(p, "></" SOAPPREFIX ":Body></" SOAPPREFIX ":Envelope>\r\n",
+ 		        soapbody + sizeof(soapbody) - p);
+ 	}
+-	if(!parseURL(url, hostname, &port, &path)) return -1;
++	if(!parseURL(url, &hostname, &port, &path)) return -1;
+ 	if(s<0)
+ 	{
+ 		s = socket(PF_INET, SOCK_STREAM, 0);
+@@ -214,6 +213,7 @@
+ 		{
+ 			PRINT_SOCKET_ERROR("socket");
+ 			*bufsize = 0;
++			free (hostname);
+ 			return -1;
+ 		}
+ 		dest.sin_family = AF_INET;
+@@ -224,11 +224,13 @@
+ 			PRINT_SOCKET_ERROR("connect");
+ 			closesocket(s);
+ 			*bufsize = 0;
++			free (hostname);
+ 			return -1;
+ 		}
+ 	}
+ 
+ 	n = soapPostSubmit(s, path, hostname, port, soapact, soapbody);
++	free (hostname);
+ 	if(n<=0) {
+ #ifdef DEBUG
+ 		printf("Error sending SOAP request\n");
+--- a/server/miniupnp/miniwget.c
++++ b/server/miniupnp/miniwget.c
+@@ -15,7 +15,6 @@
+ #ifdef WIN32
+ #include <winsock2.h>
+ #include <io.h>
+-#define MAXHOSTNAMELEN 64
+ #define MIN(x,y) (((x)<(y))?(x):(y))
+ #define snprintf _snprintf
+ #define herror
+@@ -151,14 +150,14 @@
+ /* parseURL()
+  * arguments :
+  *   url :		source string not modified
+- *   hostname :	hostname destination string (size of MAXHOSTNAMELEN+1)
++ *   hostname :		hostname destination string (must be freed by the caller if there was no error)
+  *   port :		port (destination)
+  *   path :		pointer to the path part of the URL 
+  *
+  * Return values :
+  *    0 - Failure
+  *    1 - Success         */
+-int parseURL(const char * url, char * hostname, unsigned short * port, char * * path)
++int parseURL(const char * url, char ** hostname, unsigned short * port, char * * path)
+ {
+ 	char * p1, *p2, *p3;
+ 	p1 = strstr(url, "://");
+@@ -172,15 +171,18 @@
+ 	p3 = strchr(p1, '/');
+ 	if(!p3)
+ 		return 0;
+-	memset(hostname, 0, MAXHOSTNAMELEN + 1);
+ 	if(!p2 || (p2>p3))
+ 	{
+-		strncpy(hostname, p1, MIN(MAXHOSTNAMELEN, (int)(p3-p1)));
++		*hostname = malloc ((int)(p3-p1) + 1);
++		strncpy(*hostname, p1, (int)(p3-p1));
++		(*hostname)[(int)(p3-p1)] = '\0';
+ 		*port = 80;
+ 	}
+ 	else
+ 	{
+-		strncpy(hostname, p1, MIN(MAXHOSTNAMELEN, (int)(p2-p1)));
++		*hostname = malloc ((int)(p2-p1) + 1);
++		strncpy(*hostname, p1, (int)(p2-p1));
++		(*hostname)[(int)(p2-p1)] = '\0';
+ 		*port = 0;
+ 		p2++;
+ 		while( (*p2 >= '0') && (*p2 <= '9'))
+@@ -199,11 +201,14 @@
+ 	unsigned short port;
+ 	char * path;
+ 	/* protocol://host:port/chemin */
+-	char hostname[MAXHOSTNAMELEN+1];
++	char *hostname;
++	void *ret;
+ 	*size = 0;
+-	if(!parseURL(url, hostname, &port, &path))
++	if(!parseURL(url, &hostname, &port, &path))
+ 		return NULL;
+-	return miniwget2(url, hostname, port, path, size, 0, 0);
++	ret = miniwget2(url, hostname, port, path, size, 0, 0);
++	free (hostname);
++	return ret;
+ }
+ 
+ void * miniwget_getaddr(const char * url, int * size, char * addr, int addrlen)
+@@ -211,12 +216,15 @@
+ 	unsigned short port;
+ 	char * path;
+ 	/* protocol://host:port/chemin */
+-	char hostname[MAXHOSTNAMELEN+1];
++	char *hostname;
++	void *ret;
+ 	*size = 0;
+ 	if(addr)
+ 		addr[0] = '\0';
+-	if(!parseURL(url, hostname, &port, &path))
++	if(!parseURL(url, &hostname, &port, &path))
+ 		return NULL;
+-	return miniwget2(url, hostname, port, path, size, addr, addrlen);
++	ret = miniwget2(url, hostname, port, path, size, addr, addrlen);
++	free (hostname);
++	return ret;
+ }
+ 
+--- a/server/miniupnp/miniwget.h
++++ b/server/miniupnp/miniwget.h
+@@ -18,7 +18,7 @@
+ 
+ LIBSPEC void * miniwget_getaddr(const char *, int *, char *, int);
+ 
+-int parseURL(const char *, char *, unsigned short *, char * *);
++int parseURL(const char *, char **, unsigned short *, char * *);
+ 
+ #ifdef __cplusplus
+ }

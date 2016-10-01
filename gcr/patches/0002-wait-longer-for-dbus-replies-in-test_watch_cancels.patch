@@ -1,0 +1,29 @@
+From a19762780f47202e7d630d4c43e33d862f88ee6b Mon Sep 17 00:00:00 2001
+From: Michael Biebl <biebl@debian.org>
+Date: Mon, 4 Apr 2016 03:38:19 +0200
+Subject: [PATCH 2/2] wait longer for dbus replies in test_watch_cancels
+
+Increase the time we wait for a reply from 250ms to 1s. Apparently 250ms
+is too low for slow architectures like mipsel.
+
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=764569
+---
+ gcr/test-system-prompt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcr/test-system-prompt.c b/gcr/test-system-prompt.c
+index 703a7cb..32ac493 100644
+--- a/gcr/test-system-prompt.c
++++ b/gcr/test-system-prompt.c
+@@ -719,7 +719,7 @@ test_watch_cancels (Test *test,
+ 	                                           on_result_pair_two, &pair);
+ 
+ 	/* Wait a bit before stopping, so outgoing request is done */
+-	egg_test_wait_until (250);
++	egg_test_wait_until (1000);
+ 
+ 	/* Kill the mock prompter */
+ 	gcr_mock_prompter_disconnect ();
+-- 
+2.8.0.rc3
+

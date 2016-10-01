@@ -1,0 +1,44 @@
+From: Mathieu Trudel-Lapierre <mathieu.trudel-lapierre@canonical.com>
+Subject: Set out_icon_name; which is necessary for indicator.
+
+Otherwise one would see mobile data use the last icon applied in the applet.
+
+---
+ src/mobile-helpers.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+Index: network-manager-applet-1.2.2/src/mobile-helpers.c
+===================================================================
+--- network-manager-applet-1.2.2.orig/src/mobile-helpers.c
++++ network-manager-applet-1.2.2/src/mobile-helpers.c
+@@ -120,6 +120,21 @@ mobile_helper_get_quality_icon_name (gui
+ }
+ 
+ const char *
++mobile_helper_get_mobile_quality_icon_name (guint32 quality)
++{
++	if (quality > 80)
++		return "gsm-3g-full";
++	else if (quality > 55)
++		return "gsm-3g-high";
++	else if (quality > 30)
++		return "gsm-3g-medium";
++	else if (quality > 5)
++		return "gsm-3g-low";
++	else
++		return "gsm-3g-none";
++}
++
++const char *
+ mobile_helper_get_tech_icon_name (guint32 tech)
+ {
+ 	switch (tech) {
+@@ -616,7 +631,7 @@ mobile_helper_get_icon (NMDevice *device
+ 		                                               mb_state,
+ 		                                               mb_tech,
+ 		                                               applet);
+-		*out_icon_name = mobile_helper_get_quality_icon_name (quality_valid ?
++		*out_icon_name = mobile_helper_get_mobile_quality_icon_name (quality_valid ?
+ 		                                                      quality : 0);
+ 
+ 		if ((mb_state != MB_STATE_UNKNOWN) && quality_valid) {

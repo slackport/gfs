@@ -1,0 +1,15 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+        |-----handy-ruler------------------------------------------------------|
+libgdata: libgdata
+libgdata:
+libgdata: libgdata is a GLib-based library for accessing online service APIs
+libgdata: using the GData protocol - most notably, Google's services. It
+libgdata: provides APIs to access the common Google services, and has full
+libgdata: asynchronous support. 
+libgdata:
