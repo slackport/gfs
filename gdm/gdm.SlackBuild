@@ -24,7 +24,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate http://ftp.acc.umu.se/pub/GNOME/sources/gdm/3.20/gdm-3.20.1.tar.xz
+wget -c --no-check-certificate ftp://ftp.gnome.org/pub/GNOME/sources/gdm/3.22/gdm-3.22.0.tar.xz
 
 PRGNAM=gdm
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
@@ -74,12 +74,12 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 patches=(
-gdm-3.20.1-revert-gdm-session-set-pam-tty-when-initialising-pam.patch
 gdm-3.20.0-get-seat-id-from-function.patch
-gdm-3.18.2-restore-deprecated-consolekit-code.patch
+gdm-3.22.0-restore-deprecated-consolekit-code.patch
 gdm-3.18.2-rebase-autologin-fixes.patch
-gdm-3.8.4-fingerprint-auth.patch
+gdm-3.20.1-revert-gdm-session-set-pam-tty-when-initialising-pam.patch
 gdm-2.32.0-xinitrc-ssh-agent.patch
+gdm-3.8.4-fingerprint-auth.patch
 )
 
 for ptch in "${patches[@]}"; do
