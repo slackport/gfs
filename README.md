@@ -42,9 +42,10 @@
 ### How to compile and use GNOME 3.22
  In console, type:
  1. git clone https://github.com/slackport/gfs
- 2. ./gfs.SlackMeta
- 3. After compile and install, reboot your system.
- 4. Use 'startx' to choose Gnome3 (or Flashback).
+ 2. cd gfs
+ 3. ./gfs.SlackMeta
+ 4. After compile and install, reboot your system.
+ 5. Use 'startx' to choose Gnome3 (or Flashback).
 
 ### Thanks
 - [Linux From Scratch](http://www.linuxfromscratch.org/)
