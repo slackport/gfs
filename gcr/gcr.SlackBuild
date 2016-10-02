@@ -22,7 +22,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certifcate http://ftp.gnome.org/pub/GNOME/sources/gcr/3.20/gcr-3.20.0.tar.xz
+wget -c --no-check-certificate http://ftp.gnome.org/pub/GNOME/sources/gcr/3.20/gcr-3.20.0.tar.xz
 
 PRGNAM=gcr
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
