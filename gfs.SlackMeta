@@ -143,7 +143,6 @@ libsigc++
 glibmm
 pangomm
 gtkmm3
-atkmm
 gnome-system-monitor
 pcre2
 vte4
