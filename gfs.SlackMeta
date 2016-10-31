@@ -208,28 +208,62 @@ gnome-tetravex
 
 set -e
 
-checkusers() {
-  echo "  Before start, I need to add 'colord' and 'avahi' users and groups."
-  echo "  Can I do that? Press CTRL + C if not!"
-  read
-  groupadd -g 214 avahi
-  useradd -u 214 -g 214 -c "Avahi" -d /dev/null -s /bin/false avahi
-  groupadd -g 303 colord
-  useradd -d /var/lib/colord -u 303 -g colord -s /bin/false colord
+message() {
+
+  echo "  I need to add $subject $name."
+  echo "  Is that allright with you ?"
+  echo "  yes / no"
+  read reply
+  case $reply in
+    "yes") echo "Adding $subject $name" ;;
+    "no") echo "Not adding $subject $name" && exit $? ;;
+  esac
 }
 
-if ! grep -q "^avahi:" /etc/passwd; then
-  checkusers
-fi
-if ! grep -q "^avahi:" /etc/group ; then
-  checkusers
+# This function is a collaboration of Martin S.I. Tijsma <sali@xs4all.nl>
+# Thanks a lot!
+checkusers() {
+
+if
+    ! grep -q "^avahi:" /etc/passwd
+then
+    subject=user
+    name=Avahi
+    message
+    useradd -u 214 -g 214 -c "Avahi" -d /dev/null -s /bin/false avahi
 fi
 
-if ! getent group colord 2>/dev/null 1>/dev/null ; then
-  checkusers
-elif ! getent passwd colord 2>/dev/null 1>/dev/null ; then
-  checkusers
+if
+    ! grep -q "^avahi:" /etc/group
+then
+    subject=group
+    name=Avahi
+    message
+    groupadd -g 214 avahi
+
 fi
+
+if
+    ! getent group colord 2>/dev/null 1>/dev/null
+then
+    subject=user
+    name=colord
+    message
+    groupadd -g 303 colord
+fi
+
+if
+    ! getent passwd colord 2>/dev/null 1>/dev/null
+then
+    subject=group
+    name=colord
+    message
+    useradd -d /var/lib/colord -u 303 -g colord -s /bin/false colord
+fi
+
+ }
+
+checkusers
 
 for buildpkg in "${PKGBUILD[@]}"; do
  if [ -z "$(ls /var/log/packages | grep ^$buildpkg-[0-9] | grep _gfs)" ]; then
