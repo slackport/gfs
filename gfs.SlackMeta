@@ -225,15 +225,6 @@ message() {
 checkusers() {
 
 if
-    ! grep -q "^avahi:" /etc/passwd
-then
-    subject=user
-    name=Avahi
-    message
-    useradd -u 214 -g 214 -c "Avahi" -d /dev/null -s /bin/false avahi
-fi
-
-if
     ! grep -q "^avahi:" /etc/group
 then
     subject=group
@@ -241,6 +232,15 @@ then
     message
     groupadd -g 214 avahi
 
+fi
+
+if
+    ! grep -q "^avahi:" /etc/passwd
+then
+    subject=user
+    name=Avahi
+    message
+    useradd -u 214 -g 214 -c "Avahi" -d /dev/null -s /bin/false avahi
 fi
 
 if
