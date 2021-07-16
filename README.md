@@ -16,12 +16,19 @@
  In console (root), type:
  1. git clone https://github.com/slackport/gfs
  2. cd gfs
+ 3. sh gfs
+ 4. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
+ 5. Reboot your system.
+ 6. Use 'startx' to choose GNOME (or Flashback).
+
+### If you want do make a slackport-gfs package
+ In console (root), type:
+ 1. git clone https://github.com/slackport/gfs
+ 2. cd gfs
  3. sh gfs autopkg
- 4. upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
- 5. gfs
- 6. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
- 7. Reboot your system.
- 8. Use 'startx' to choose GNOME (or Flashback).
+ 3. cd .. && rm -rf gfs
+ 5. upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
+ 6. gfs
 
 ### Things you should know
 - The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
