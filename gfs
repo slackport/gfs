@@ -145,12 +145,11 @@ fi
 }
 
 makegfspkg() {
-cd $GFSCWD/..
 mkdir -p pkg/opt/gfs
 mv TODO gfs README.md source pkg/opt/gfs/
 cd pkg
 mkdir -p usr/sbin
-ln -s $GFSPWD/gfs usr/sbin/gfs
+ln -s /opt/gfs/gfs usr/sbin/gfs
 mkdir -p install
 #            |-----handy-ruler------------------------------------------------------|
 cat <<EOT >install/slack-desc
