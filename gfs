@@ -169,8 +169,6 @@ EOT
 makepkg -l y -c n $OUTPUT/slackport-gfs-$GFSVERSION-x86_64-1_gfs.txz
 cd ..
 rm -rf pkg/
-cd ..
-rm -rf gfs/
 }
 
 gfsversion() {
