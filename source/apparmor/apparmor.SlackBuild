@@ -1,0 +1,236 @@
+#!/bin/sh
+
+# Slackware build script for AppArmor
+
+# Copyright 2018 pyllyukko
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=apparmor
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d v | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=2.13.4
+fi
+
+MDSCHK=ac50e8bec220d62a350661ee88fd41b4
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://gitlab.com/apparmor/apparmor/-/archive/v$VERSION/apparmor-v$VERSION.tar.bz2"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-v$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-v$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-v$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-v$VERSION.tar.bz2
+cd $PRGNAM-v$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+export PYTHONPATH=$(realpath libraries/libapparmor/swig/python)
+export PYTHON=/usr/bin/python3
+export PYTHON_VERSION=3
+export PYTHON_VERSIONS=python3
+
+pushd ./libraries/libapparmor
+sh ./autogen.sh
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --disable-debug-output \
+  --enable-man-pages \
+  --enable-shared=yes \
+  --disable-static \
+  --with-perl \
+  --with-python \
+  --build=$ARCH-slackware-linux
+make $JOBS || make
+make install DESTDIR=$PKG
+popd
+
+pushd binutils
+make $JOBS || make
+make check
+make install DESTDIR=$PKG MANDIR=/usr/man
+popd
+
+pushd parser
+make $JOBS || make
+make install DESTDIR=$PKG MANDIR=/usr/man
+popd
+mv -v ${PKG}/etc/apparmor/parser.conf    ${PKG}/etc/apparmor/parser.conf.new
+mv -v ${PKG}/etc/apparmor/subdomain.conf ${PKG}/etc/apparmor/subdomain.conf.new
+mv -v ${PKG}/etc/rc.d/rc.apparmor        ${PKG}/etc/rc.d/rc.apparmor.new
+
+pushd utils
+make $JOBS || make
+make install DESTDIR=$PKG MANDIR=/usr/man
+popd
+mv -v ${PKG}/etc/apparmor/easyprof.conf ${PKG}/etc/apparmor/easyprof.conf.new
+mv -v ${PKG}/etc/apparmor/logprof.conf  ${PKG}/etc/apparmor/logprof.conf.new
+mv -v ${PKG}/etc/apparmor/notify.conf   ${PKG}/etc/apparmor/notify.conf.new
+mv -v ${PKG}/etc/apparmor/severity.db   ${PKG}/etc/apparmor/severity.db.new
+
+# Apache
+#pushd changehat/mod_apparmor
+#make
+#make install DESTDIR=$PKG MANDIR=/usr/man
+#popd
+
+pushd profiles
+make
+make install DESTDIR=$PKG
+popd
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG -name '*.la' -delete
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+find $PKG -name perllocal.pod \
+  -o -name ".packlist" \
+  -o -name "*.bs" \
+  | xargs rm -f
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  LICENSE README.md documentation/ \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM: apparmor (Mandatory Access Control mechanism)
+$PRGNAM:
+$PRGNAM: AppArmor protects systems from insecure or untrusted processes by
+$PRGNAM: running them in restricted confinement, while still allowing
+$PRGNAM: processes to share files, exercise privilege and communicate with
+$PRGNAM: other processes. AppArmor is a Mandatory Access Control (MAC)
+$PRGNAM: mechanism which uses the Linux Security Module (LSM) framework.
+$PRGNAM:
+$PRGNAM:
+$PRGNAM: Homepage: https://gitlab.com/apparmor/
+$PRGNAM:
+EOT
+
+cat <<\EOT >$PKG/install/doinst.sh
+config() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  # If there's no config file by that name, mv it over:
+  if [ ! -r $OLD ]; then
+    mv $NEW $OLD
+  elif [ "$(cat $OLD | md5sum)" = "$(cat $NEW | md5sum)" ]; then
+    # toss the redundant copy
+    rm $NEW
+  fi
+  # Otherwise, we leave the .new copy for the admin to consider...
+}
+
+preserve_perms() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  if [ -e $OLD ]; then
+    cp -a $OLD ${NEW}.incoming
+    cat $NEW > ${NEW}.incoming
+    mv ${NEW}.incoming $NEW
+  fi
+  config $NEW
+}
+
+preserve_perms etc/rc.d/rc.apparmor.new
+config etc/apparmor/easyprof.conf.new
+config etc/apparmor/logprof.conf.new
+config etc/apparmor/notify.conf.new
+config etc/apparmor/parser.conf.new
+config etc/apparmor/subdomain.conf.new
+config etc/apparmor/severity.db.new
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

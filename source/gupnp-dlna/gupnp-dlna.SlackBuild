@@ -1,0 +1,176 @@
+#!/bin/sh
+
+# Slackware build script for gupnp-dlna
+
+# Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=0.10.5
+fi
+
+MDSCHK=2d0dc1e4189d0243ac3838ece1e8fea0
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://download.gnome.org/sources/$PRGNAM/$(echo $VERSION | cut -f1,2 -d.)/$PRGNAM-$VERSION.tar.xz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xfv $CWD/$PRGNAM-$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+ --prefix=/usr \
+ --libdir=/usr/lib${LIBDIRSUFFIX} \
+ --libexecdir=/usr/libexec \
+ --sysconfdir=/etc \
+ --localstatedir=/var \
+ --mandir=/usr/man \
+ --disable-maintainer-mode \
+ --enable-debug=no \
+ --enable-compile-warnings=no \
+ --enable-shared \
+ --disable-static \
+ --enable-gstreamer-metadata-backend=yes \
+ --enable-legacy-gstreamer-metadata-backend=no \
+ --enable-introspection=yes \
+ --build=$ARCH-slackware-linux
+
+make $JOBS || make
+DESTDIR=$PKG make install
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG -name '*.la' -delete
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a AUTHORS COPYING ChangeLog INSTALL NEWS README TODO \
+ $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$(basename $0) > $PKG/usr/doc/$PRGNAM-$VERSION/$(basename $0)
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: gupnp-dlna
+$PRGNAM:
+$PRGNAM: GUPnP DLNA is a small utility library that aims to ease the
+$PRGNAM: DLNA-related tasks such as media profile guessing, transcoding to a
+$PRGNAM: given profile, etc.
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM: https://gitlab.gnome.org/GNOME/gupnp-dlna
+$PRGNAM:
+EOT
+
+cat <<\EOT >$PKG/install/doinst.sh
+if [ -x /usr/bin/update-mime-database ]; then
+  /usr/bin/update-mime-database /usr/share/mime &> /dev/null
+fi
+
+if [ -x /usr/bin/update-desktop-database ]; then
+  /usr/bin/update-desktop-database -q usr/share/applications >/dev/null 2>&1
+fi
+
+if [ -e usr/share/icons/hicolor/icon-theme.cache ]; then
+  if [ -x /usr/bin/gtk-update-icon-cache ]; then
+    /usr/bin/gtk-update-icon-cache usr/share/icons/hicolor >/dev/null 2>&1
+  fi
+fi
+
+if [ -e usr/share/glib-2.0/schemas ]; then
+  if [ -x /usr/bin/glib-compile-schemas ]; then
+    /usr/bin/glib-compile-schemas usr/share/glib-2.0/schemas >/dev/null 2>&1
+  fi
+fi
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

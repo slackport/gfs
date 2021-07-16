@@ -1,0 +1,34 @@
+The Xen hypervisor, a powerful open source industry standard for
+virtualization, offers a powerful, efficient, and secure feature set for
+virtualization of x86, x86_64, IA64, ARM, and other CPU architectures. It
+supports a wide range of guest operating systems including Windows, Linux,
+Solaris, and various versions of the BSD operating systems.
+
+This script has a few optional dependencies:
+
+  mbootpack - creates LILO compatible kernel images
+  libssh - mostly used by libvirt, enable with USE_LIBSSH=yes
+           (previously known as USE_LIBSSH2)
+  ocaml-findlib - autodetected, builds oxenstored binary
+  spice - enable with USE_SPICE=yes
+
+Linking with the stock libraries:
+
+  bluez - enable with USE_BLUEZ=yes
+  gtk - enable with USE_GTK=yes
+  audio - enable with USE_AUDIO=yes
+          (or a comma-delimited list: oss alsa sdl pa)
+
+Reading material:
+
+  README.SLACKWARE - explains Xen daemons and system startup
+  README.dom0 - explains setting up privileged Xen domain (host)
+  README.domU - talks about unprivileged Xen domain (guest)
+  README.openvswitch-extended - additional Open vSwitch use case
+  README.xsa - building Xen with latest security fixes
+
+Toggle additional features:
+
+  BUILD_STUBDOM=yes - enables lightweight service/driver domains
+  INSTALL_OPENVSWITCH_EXTENDED=yes - systemwide install
+  WITH_OVMF=no - disables guest domain EFI/UEFI support

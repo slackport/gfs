@@ -1,0 +1,40 @@
+Description: Optional udev without systemd need and attr header dir fix.
+Author: Rafael Tavares <mdrafaeltavares@gmail.com>
+
+diff -u phodav-2.3/meson.build phodav-2.3.new/meson.build
+--- phodav-2.3/meson.build	2019-02-26 15:12:17.000000000 -0300
++++ phodav-2.3.new/meson.build	2021-06-30 10:35:04.422526961 -0300
+@@ -53,7 +53,7 @@
+   )
+ endif
+ 
+-udev = dependency('udev', required : get_option('systemd'))
++udev = dependency('udev', required : get_option('udev'))
+ if udev.found()
+   install_data(
+     'data/70-spice-webdavd.rules',
+@@ -61,7 +61,7 @@
+   )
+ endif
+ 
+-if compiler.has_header('attr/xattr.h')
++if compiler.has_header('sys/xattr.h')
+   conf.set('HAVE_ATTR_XATTR_H', 1)
+ endif
+ 
+diff -u phodav-2.3/meson_options.txt phodav-2.3.new/meson_options.txt
+--- phodav-2.3/meson_options.txt	2019-02-26 15:12:17.000000000 -0300
++++ phodav-2.3.new/meson_options.txt	2021-06-30 10:33:33.023527988 -0300
+@@ -10,6 +10,10 @@
+        type : 'feature',
+        description : 'Install systemd units/configuration')
+ 
++option('udev',
++       type : 'feature',
++       description : 'Install udev rules/configuration')
++
+ option('build-id',
+        type : 'integer',
+        value : 0,
+Common subdirectories: phodav-2.3/po and phodav-2.3.new/po
+Common subdirectories: phodav-2.3/spice and phodav-2.3.new/spice

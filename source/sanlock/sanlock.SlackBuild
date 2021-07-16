@@ -1,0 +1,209 @@
+#!/bin/sh
+
+# Slackware build script for sanlock
+
+# Copyright 2019  Mario Preksavec, Zagreb, Croatia
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Bail if user or group isn't valid on your system
+if ! grep ^$PRGNAM: /etc/passwd 2>&1 > /dev/null; then
+  cat << EOF
+
+  You must have a $PRGNAM user to run this script
+
+  # groupadd -g 363 $PRGNAM
+  # useradd -u 363 -d /var/run/$PRGNAM -s /bin/false -g $PRGNAM $PRGNAM
+
+  The disk group is also needed
+
+  # usermod -a -G disk $PRGNAM
+
+EOF
+  exit
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=3.8.4
+fi
+
+MDSCHK=dc5c936d4344dd64799fa0c914fe5324
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://pagure.io/sanlock/archive/sanlock-$VERSION/sanlock-sanlock-$VERSION.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf {,$PRGNAM-}$PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz || tar xvf $CWD/$PRGNAM-$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION || cd $PRGNAM-$PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# We don't have stack clash protection support yet
+sed -i 's/-fstack-clash-protection//' */Makefile
+
+CFLAGS="$SLKCFLAGS" make $JOBS -C wdmd
+CFLAGS="$SLKCFLAGS" make $JOBS -C src
+CFLAGS="$SLKCFLAGS" make $JOBS -C python
+
+make -C src install LIBDIR=/usr/lib${LIBDIRSUFFIX} DESTDIR=$PKG
+make -C wdmd install LIBDIR=/usr/lib${LIBDIRSUFFIX} DESTDIR=$PKG
+make -C python install LIBDIR=/usr/lib${LIBDIRSUFFIX} DESTDIR=$PKG
+
+install -D -m0755 -oroot -groot init.d/sanlock $PKG/etc/rc.d/rc.sanlock.new
+install -D -m0755 -oroot -groot init.d/wdmd $PKG/etc/rc.d/rc.wdmd.new
+sed -e "s|/etc/sysconfig|/etc/default|g" \
+    -i $PKG/etc/rc.d/rc.sanlock.new \
+    -i $PKG/etc/rc.d/rc.wdmd.new
+
+install -D -m0644 -oroot -groot src/logrotate.sanlock $PKG/etc/logrotate.d/sanlock.new
+install -D -m0644 -oroot -groot src/sanlock.conf $PKG/etc/sanlock/sanlock.conf.new
+install -D -m0644 -oroot -groot init.d/wdmd.sysconfig $PKG/etc/default/wdmd.new
+
+mkdir -p $PKG/{etc/wdmd.d,var/run/sanlock}
+
+mv $PKG/usr/share/man $PKG/usr
+rmdir $PKG/usr/share
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a README.rst $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+cat $CWD/README > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: sanlock (shared storage daemon)
+$PRGNAM:
+$PRGNAM: The sanlock daemon manages leases for applications on hosts using
+$PRGNAM: shared storage.
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM: Homepage: https://pagure.io/sanlock
+$PRGNAM:
+EOT
+
+cat <<\EOT >$PKG/install/doinst.sh
+config() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  # If there's no config file by that name, mv it over:
+  if [ ! -r $OLD ]; then
+    mv $NEW $OLD
+  elif [ "$(cat $OLD | md5sum)" = "$(cat $NEW | md5sum)" ]; then
+    # toss the redundant copy
+    rm $NEW
+  fi
+  # Otherwise, we leave the .new copy for the admin to consider...
+}
+
+preserve_perms() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  if [ -e $OLD ]; then
+    cp -a $OLD ${NEW}.incoming
+    cat $NEW > ${NEW}.incoming
+    mv ${NEW}.incoming $NEW
+  fi
+  config $NEW
+}
+
+preserve_perms etc/rc.d/rc.sanlock.new
+preserve_perms etc/rc.d/rc.wdmd.new
+config etc/logrotate.d/sanlock.new
+config etc/sanlock/sanlock.conf.new
+config etc/default/wdmd.new
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

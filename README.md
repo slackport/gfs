@@ -1,72 +1,56 @@
-# GFS Project - GNOME 3.22
-[![gfs one](https://github.com/slackport/gfs/blob/master/img/gfs.01.tn.png)]
-(https://github.com/slackport/gfs/blob/master/img/gfs.01.png?raw=true)
-[![gfs two](https://github.com/slackport/gfs/blob/master/img/gfs.02.tn.png)]
-(https://github.com/slackport/gfs/blob/master/img/gfs.02.png?raw=true)
+# GFS Project - GNOME 40
 ###### GNOME from Scratch/GNOME for Slackware
 
 ### Introduction
 
- GFS is a personal project that makes possible to use GNOME on Slackware GNU/Linux operating system without systemd or wayland programs.
+ The first question you should ask yourself is: 'if I don't like the GNOME, what am I doing here?'
+ I'm talking about clarity, simplicity... I'm talking about tranquility and comfort... of course, everything have a price...
+ And if you don't understand this, you're wasting your time reading me!
+ This is GNOME 40... from Scratch (for Slackware)!
 
-# WARNING
- Version 3.22 will upgrade some Slackware official packages:
-- NetworkManager
-- adwaita-icon-themes
-- at-spi2-atk
-- at-spi2-core
-- atk
-- atkmm
-- dconf
-- dconf-editor
-- gcr
-- gdk-pixbuf2
-- glib-networking
-- glib2 
-- gnome-keyring
-- gnome-themes-standard
-- gobject-introspection
-- gsettings-desktop-schemas
-- gst-plugins-base
-- gst-plugins-good
-- gstreamer
-- gtk+3
-- gtkmm3
-- gvfs
-- libsigc++
-- libsoup
-- pango
-- pangomm
-- upower
+### Compatibilty
+ 
+ 100% Compatible with slackware64-current.
 
-### How to compile and use GNOME 3.22
+### How to compile and use GNOME 40
  In console, type:
  1. git clone https://github.com/slackport/gfs
  2. cd gfs
- 3. ./gfs.SlackMeta
- 4. After compile and install, reboot your system.
- 5. Use 'startx' to choose Gnome3 (or Flashback).
+ 3. sh gfs autopkg
+ 4. upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
+ 5. gfs
+ 6. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
+ 7. Reboot your system.
+ 8. Use 'startx' to choose GNOME (or Flashback).
+
+### Things you should know
+- The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
+a symlink will be created on /usr/sbin/gfs to make things easier (for me at least).
+- GDM is a big problem since 2016, and I'm not going to try harder to make it work, BUT
+on GNOME 40 we will need it for some functions to work correctly (blank screen, lock screen), so
+with this configuration I used gdm will run like a deamon.
+
+### About gfs script
+gfs is my tool for editing, compiling and installing packages. 
+It also serves as a creator of new files using a template; /var/log/packages log viewer. 
+It's simple, but it saves me a lot of time and energy. 
+If you are interested in improving this GNOME release, maybe gfs will be useful for you too.
 
 ### Thanks
 - [Linux From Scratch](http://www.linuxfromscratch.org/)
 - [Raphael Fabeni](https://github.com/raphaelfabeni)
 - [Cristina Mansur](mailto:cristinatmansur@gmail.com)
 - [Willy Sudiarto Raharjo](https://github.com/willysr)
-- [Sasa Ostrouska](mailto:casaxa@gmail.com)
-- [PhantomX](https://github.com/PhantomX)
-- [Eric Hameleers](http://alien.slackbook.org/)
-- [Edinaldo P. Silva](mailto:edps.mundognu@gmail.com)
-- [Dantrell B.](https://github.com/dantrell)
 - [Arch Linux Team](https://www.archlinux.org/)
 - [Gentoo Linux Team](https://www.gentoo.org/)
 - [SlackBuilds Team](https://slackbuilds.org/)
 
 ### Contact.
- If you can help me to improve this project, mailme:
+ If you can help me to improve this project, please:
   - mdrafaeltavares@gmail.com
 
 I hope you enjoy it,
 
-[Rafael Tavares](https://plus.google.com/u/0/112846121820802265999)
+[Rafael Tavares](https://instagram.com/rafaeltlacerda)
 
-(2016, Bahia-Brazil)
+(2021, Bahia-Brazil)

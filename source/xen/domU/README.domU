@@ -1,0 +1,41 @@
+domU.sh: This script builds a Slackware domU guest.
+
+After the ordeal of installing, configuring and booting Slackware XenLinux,
+you might be wondering how to load a guest OS. If you look around, you can
+find Xen domU (unprivileged) guest images to download from the Internet, but
+some of us might want to roll their own.
+
+Start by mounting Slackware DVD to /media/SlackDVD and run:
+
+  ./domU.sh
+
+This script will install Slackware into 8GB file called slackware.img and a
+also create 500MB swap file called swap_file.
+
+Once the install is complete, have a look at the "mydom" file. Fill in the
+full path to slackware.img and swap_file, and run:
+
+  xl create -c mydom
+
+Your Slackware XenLinux domU should boot instantly.
+
+Getting the best performance out of your domU is usually done with trimmed
+down kernels. Here are a few things to (de)select when building such kernel:
+
+  Processor type and features  --->
+    [*] Paravirtualized guest support  --->
+      [*]   Xen guest support
+
+  Bus options (PCI etc.)  --->
+    [ ] PCI support
+
+  Device Drivers  --->
+    < > Serial ATA and Parallel ATA drivers  --->
+    SCSI device support  --->
+      < > SCSI device support
+
+Removing SCSI device support will expose /dev/xvd* block device names, and
+prevent "XENBUS: Waiting for devices to initialise..." error.
+
+These files are not intended for production enviroment use, and should serve
+only as a good starting point.

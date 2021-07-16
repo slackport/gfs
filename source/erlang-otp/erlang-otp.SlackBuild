@@ -1,0 +1,171 @@
+#!/bin/sh
+
+## Written by halflife (vzdorovenco@yahoo.com)
+
+## Feel free to use, modify, redistribute this script.
+## If you make changes please modify the "Written by"
+## so that I don't recieve emails about a script I
+## did not write. Thanks.
+
+# Modified by Robby Workman 20071027
+# I won't change the "Written by" line, because I didn't
+# change who wrote the script.  If there are questions as
+# to whether my changes caused a problem, feel free to
+# send mail to me first.
+
+# Package adaptation in order to rename it from otp-R11B
+# to erlang-otp, by LukenShiro <Lukenshiro@ngi.it>
+
+# Modified by Ryan S. Northrup <northrup@yellowapple.us> on
+# 28 November 2016 to reflect the use of README.md instead
+# of README in upstream
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=23.2
+fi
+
+SRC_NAME_VERSION=otp_src_${VERSION}
+DOC_NAME_VERSION=otp_doc_man_${VERSION}
+
+MDSCHECK=(
+"http://www.erlang.org/download/otp_src_$VERSION.tar.gz e315f59eb9e420a0e469c09649f4303f"
+"http://www.erlang.org/download/otp_doc_man_$VERSION.tar.gz cfef029c3d4d6acf2cc04f8589002ecd"
+)
+
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+
+for md5check in "${MDSCHECK[@]}"; do
+ FILENAME=$(echo $md5check | cut -f1 -d" " | rev | cut -f1 -d"/" | rev)
+ MD5SNUMB=$(echo $md5check | cut -f2 -d" ")
+ FILETOCHECK=${FILETOCHECK:-$(find . -maxdepth 1 -name $(echo "$FILENAME" | cut -f1 -d" "))}
+ MD5SUMCHECK=${MD5SUMCHECK:-$(find . -maxdepth 1 -name $(echo "$MD5SNUMB" | cut -f2 -d" "))}
+ if [ -z "$FILETOCHECK" ]; then
+  SRCTODOWN=$(echo $md5check | cut -f1 -d" " )
+  $DWNLCMD $SRCTODOWN
+  unset $SRCTODOWN
+ else
+  if md5sum -c <<<"$MD5SNUMB $FILENAME"; then
+   continue
+  else
+   rm -rf "$FILETOCHECK"
+   SRCTODOWN=$(echo $md5check | cut -f1 -d" " )
+   $DWNLCMD $SRCTODOWN
+   unset $SRCTODOWN
+  fi
+ fi
+done
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRC_NAME_VERSION
+tar xvf $CWD/${SRC_NAME_VERSION}.tar.gz
+cd $SRC_NAME_VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --build=$ARCH-slackware-linux
+
+INSTALL_DV="install: install.dirs install.emulator install.libs"
+sed -i -e "s|$INSTALL_DV install.Install install.bin|$INSTALL_DV|" Makefile
+
+make $JOBS || make
+make INSTALL_PREFIX=$PKG install
+
+cd $PKG/usr/bin
+  for file in erl erlc epmd run_erl to_erl dialyzer typer escript ; do
+    rm -f $file
+    ln -s ../lib${LIBDIRSUFFIX}/erlang/bin/$file .
+  done
+cd -
+
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+tar xvf $CWD/$DOC_NAME_VERSION.tar.gz -C $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+chown -R root:root $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+chmod -R u+w,go+r-w,a-s $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+( cd $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+  mv COPYRIGHT README.md $PKG/usr/doc/$PRGNAM-$VERSION )
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mv $PKG/usr/lib${LIBDIRSUFFIX}/erlang/man $PKG/usr
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: erlang-otp (programming language)
+$PRGNAM:
+$PRGNAM: Erlang is a general-purpose concurrent programming language and
+$PRGNAM: runtime system.
+$PRGNAM: The sequential subset of Erlang is a functional language,
+$PRGNAM: with strict evaluation, single assignment, and dynamic typing.
+$PRGNAM: It was designed by Ericsson to support distributed,
+$PRGNAM: fault-tolerant, soft-real-time, non-stop applications.
+$PRGNAM:
+$PRGNAM: http://www.erlang.org/
+EOT
+
+cat <<EOT >$PKG/install/doinst.sh
+chroot . sh /usr/lib${LIBDIRSUFFIX}/erlang/Install -minimal /usr/lib${LIBDIRSUFFIX}/erlang 1>/dev/null 2>/dev/null
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

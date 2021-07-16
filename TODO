@@ -1,0 +1,17 @@
+# Take a look around 'ceph'.
+- Add rc, user, deamons, needed configs, etc.
+- Try to compile with rocksdb shared library.
+
+# Make GDM work properly.
+- A big problem since 2016 - GNOME 3.22.
+For now, we will use GDM "like a deamon", because GDM 
+is required to make some funcions work correctly,
+like 'blank screen', 'lock screen', 'reboot', etc.
+
+# Create a dependency auto-compilation/install system.
+- With gfs build system or inside each SlackBuild?
+
+# A way to upgrade already installed packages when git changes.
+- I need to create an update system for when new versions of the
+programs arrive, because gfs only checks if the program is
+installed, but not its version.

@@ -1,0 +1,740 @@
+#!/bin/sh
+
+# gfs (gnome from scratch) system build
+#
+# Copyright 2016-2021 Rafael Tavares <mdrafaeltavares@gmail.com>
+# All rights reserved
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+GFSVERSION=0.2.9
+GFSSOURCEDIR=/opt/slackport/source
+OUTPUT=/tmp
+GFSEDITOR=nano
+
+set -e
+
+cd $GFSSOURCEDIR
+
+PKGREQ=$(echo $2 | cut -f1 -d'/')
+PKGREQ2=$(echo $1 | cut -f1 -d'/')
+FINDREQ=${FINDREQ:-$(find $OUTPUT -maxdepth 1 -name $PKGREQ-[0-9]*.txz)}
+LOGREQ=${LOGREQ:-$(find /var/lib/pkgtools/packages -maxdepth 1 -name $PKGREQ-[0-9]* | cut -f1 -d" ")}
+
+gfstalk() {
+if [ -z "$1" ]; then
+ echo -e " -| \033[1m$(basename $0)\033[0m:"
+else
+ echo -e " -| \033[1m$(basename $0)\033[0m: $1"
+fi
+}
+
+edit() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) edit 'ProgramName'"
+ exit 1
+else
+ if [ -f "$PKGREQ/$PKGREQ.SlackBuild" ]; then
+  cd "$PKGREQ"
+  $GFSEDITOR "$PKGREQ".SlackBuild
+  cd ..
+ else
+  gfstalk "'$PKGREQ' SlackBuild script not found!"
+  exit 1
+ fi
+fi
+}
+
+build() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) build 'ProgramName'"
+ exit 1
+else
+ if [ -f "$PKGREQ/$PKGREQ.SlackBuild" ]; then
+  cd "$PKGREQ"
+  OUTPUT=$OUTPUT sh "$PKGREQ".SlackBuild || exit 1
+  cd ..
+ else
+  gfstalk "'$PKGREQ' SlackBuild script not found!"
+  exit 1
+ fi
+fi
+}
+
+installpkg() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) install 'ProgramName'"
+ exit 1
+else
+ if [ -z "$FINDREQ" ]; then
+  gfstalk "$PKGREQ package not found!"
+  exit 1
+ else
+  upgradepkg --install-new --reinstall "$FINDREQ"
+  exit 0
+ fi
+fi
+}
+
+prepare() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) prepare 'ProgramName'"
+ exit 1
+else
+ edit || exit 1
+ build || exit 1
+ unset FINDREQ
+ FINDREQ=${FINDREQ:-$(find $OUTPUT -maxdepth 1 -name $PKGREQ-[0-9]*.txz)}
+ installpkg || exit 1
+fi
+}
+
+catlog() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) prepare 'ProgramName'"
+ exit 1
+else
+ if [ -z "$LOGREQ" ]; then
+  gfstalk "required log not found!"
+  exit 1
+ else
+  cat "$LOGREQ" | less
+ fi
+fi
+}
+
+newtemplate() {
+if [ -z "$PKGREQ" ]; then
+ gfstalk "usage:"
+ gfstalk " $(basename $0) new 'ProgramName'"
+else
+ if [ -d "$PKGREQ" ]; then
+  gfstalk "this directory already exist!"
+  exit 1
+ else
+  mkdir -p "$PKGREQ" || exit 1
+  cp newtemplate.SlackBuild "$PKGREQ"/"$PKGREQ".SlackBuild || exit 1
+  edit || exit 1
+  build || exit 1
+  unset FINDREQ
+  FINDREQ=${FINDREQ:-$(find $OUTPUT -maxdepth 1 -name $PKGREQ-[0-9]*.txz)}
+  installpkg || exit 1
+ fi
+fi
+}
+
+makegfspkg() {
+GFSDIRECTION=$(echo $GFSSOURCEDIR | rev | cut -f3- -d'/' | rev)
+cd $GFSDIRECTION
+mkdir -p pkg/opt
+mv slackport pkg/opt
+cd pkg
+mkdir -p usr/sbin
+ln -s $GFSDIRECTION/slackport/gfs usr/sbin/gfs
+mkdir -p install
+#            |-----handy-ruler------------------------------------------------------|
+cat <<EOT >install/slack-desc
+slackport-gfs:
+slackport-gfs: GNOME From Scratch (gfs) System Builder
+slackport-gfs:
+slackport-gfs: This package contains SlackBuild scripts needed to build the GNOME
+slackport-gfs: for Slackware. The gfs is an executable script responsible for build
+slackport-gfs: and install the packages in pre-set order. In addition, gfs works as
+slackport-gfs: a tool for editing, building and install pacakges in a more practical
+slackport-gfs: and automated way.
+slackport-gfs:
+slackport-gfs: https://github.com/slackport/gfs
+slackport-gfs:
+EOT
+makepkg -l y -c n $OUTPUT/slackport-gfs-$GFSVERSION-x86_64-1_gfs.txz
+cd ..
+mv pkg/opt/slackport .
+rm -rf pkg
+}
+
+gfsversion() {
+gfstalk "$GFSVERSION"
+}
+
+gfshelp() {
+cat <<EOT
+
+
+         GNOME From Scratch - version $GFSVERSION
+
+
+  gfs autopkg		    - Create a txz package with gfs directory
+			      and /usr/sbin/gfs symlink.
+  gfs edit programname      - Edit respective SlackBuild file.
+  gfs build programname     - Run the programname SlackBuild file.
+  gfs cat programname       - See the log of installed package.
+  gfs catlog programname    - Same as above.
+  gfs help		    - Show this help mensage.
+  gfs install programname   - Install the package on $OUTPUT directory.
+  gfs new programname	    - Will create a directory and copy
+			      template.SlackBuid into it with 'programname'
+			      specified. So will edit, build and install this
+			      'programname' sequentially..
+  gfs prepare programname   - Will execute 'edit' 'build' and 'install' sequentially.
+  gfs see programname       - Same as 'cat' command.
+  gfs version               - Show gfs version.
+
+EOT
+}
+
+case "$1" in
+ "") continue ;;
+ autopkg|-a) makegfspkg && exit 1 ;;
+ edit|-e) edit && exit 1 ;;
+ build|-b) build && exit 1 ;;
+ cat|-c) catlog && exit 1 ;;
+ catlog|-c) catlog && exit 1 ;;
+ help|-h) gfshelp && exit 1 ;;
+ install|-i) installpkg && exit 1 ;;
+ new|-n) newtemplate && exit 1 ;;
+ prepare|-p) prepare && exit 1 ;;
+ see|-s) catlog && exit 1 ;;
+ version|-v) gfsversion && exit 1 ;;
+ *) PKGREQ=$PKGREQ2 && prepare && exit 1 ;;
+esac
+
+PKGBUILD=(
+# Libraries and Desktop
+libstemmer
+exempi
+libgxps
+libiptcdata
+libosinfo
+libuchardet
+totem-pl-parser
+libgrss
+libseccomp
+gssdp
+gupnp
+gupnp-dlna
+tracker2
+tracker-miners2
+tracker3
+tracker-miners3
+libgusb
+#libgtop - slack have it
+jam
+argyllcms
+valgrind
+colord
+colord-gtk
+vulkan-sdk-bin
+Vulkan-Headers
+Vulkan-Tools
+MarkupSafe
+Jinja2
+python-toml
+typogrify
+gi-docgen
+rest
+gst-plugins-bad
+libdazzle
+sysprof
+libcloudproviders
+gtk+4
+gtksourceview4
+lua
+lua53
+luasocket
+luajit
+lcov
+wheel
+libpst
+libquvi-scripts
+libquvi
+python3-soupsieve
+BeautifulSoup4
+python-webencodings
+html5lib
+sphinx
+sphinxcontrib-applehelp
+sphinxcontrib-devhelp
+sphinxcontrib-htmlhelp
+sphinxcontrib-jsmath
+sphinxcontrib-qthelp
+sphinxcontrib-serializinghtml
+snowballstemmer
+sphinx_rtd_theme
+Sphinx
+cssselect
+lxml
+geocode-glib
+libmusicbrainz5
+libwpe
+wpebackend-fdo
+bubblewrap
+enchant2
+gtkspell3
+libdaemon
+avahi
+libdmapsharing3
+geoclue2
+xdg-dbus-proxy
+webkit2gtk
+yelp-xsl
+yelp
+yelp-tools
+liboauth
+grilo
+cogl
+clutter
+clutter-gtk
+clutter-gst
+memphis
+libchamplain
+nspr
+uhttpmock
+setuptools-scm
+python3-lazy-object-proxy
+python3-wrapt
+python3-astroid
+python3-isort
+py
+python3-attrs
+pluggy
+more-itertools
+atomicwrites
+funcsigs
+python2-scandir
+pathlib2
+python3-pytest
+pytest-runner
+python-mccabe
+python3-pylint
+libgweather
+lgi
+libpeas
+blocaled
+gtest
+protobuf
+libphonenumber
+python3-dbusmock
+telepathy-glib
+libsocialweb
+gsound
+libhandy
+libportal
+zenity
+appstream-glib
+cups-pk-helper
+smartypants
+pycodestyle
+pyflakes
+ConfigParser
+flake8
+typed_ast
+typing-extensions
+mypy_extensions
+mypy
+highlight
+mistune
+python-m2r
+Automat
+hyperlink
+incremental
+constantly
+zope.interface
+python-twisted
+dbus-test-runner
+libaccounts-glib
+telepathy-mission-control
+#fop
+xmlto
+plymouth
+audit
+freerdp
+ytnef
+# packagekit - maybe in a next release
+libjte
+libisofs
+libisoburn
+ostree
+libglib-testing
+# malcontent is(?) a optional dep for flatpak
+# and flatpak is required to build malcontent (wtf?!)
+# so my build system have a special `if` for it :)
+flatpak
+malcontent
+flatpak-builder
+libgit2
+libgit2-glib
+amtk
+tepl
+gspell
+jsonrpc-glib
+template-glib
+devhelp
+alabaster
+imagesize
+pytz
+python3-babel
+autopep8
+uncrustify
+libmediaart
+gom
+libcacard
+spice-protocol
+spice
+phodav
+usbredir
+spice-gtk
+perl-Text-CSV
+gtk-vnc
+jq
+wxPython
+p7zip
+libmanette
+retro-gtk
+libwnck4
+gcab
+cantarell-fonts
+libgnomekbd
+mm-common # is a dev tool, I think we dont need it, but just in case...
+liblouis
+pyatspi
+gupnp-av
+gstreamer-editing-services
+libzapojit
+
+gnome-autoar
+gnome-desktop
+gnome-bluetooth
+gnome-color-manager
+gnome-settings-daemon
+gnome-online-accounts
+gnome-video-effects
+cheese
+gnome-control-center
+libgdata
+evolution-data-server
+mutter
+gnome-shell
+gnome-shell-extensions
+gnome-session
+gnome-backgrounds
+gnome-user-docs
+gnome-menus
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+grilo-plugins
+folks
+gfbgraph
+nautilus
+gdm
+gnome-initial-setup
+baobab
+brasero
+epiphany
+evolution
+gedit
+gitg
+eog
+evince
+file-roller
+gnome-builder
+gnome-calculator
+gnome-calendar
+gnome-disk-utility
+gnome-games
+gnome-weather
+gnome-maps
+gnome-music
+gnome-nettool
+gnome-screenshot
+gnome-system-monitor
+gnome-terminal
+gnome-tweaks
+gnote
+totem
+seahorse
+simple-scan
+sushi
+vinagre
+orca
+
+# GNOME Boxes and Deps
+liburing
+liburcu
+# cmocka - an unit test - dont install
+glusterfs
+augeas
+netcf
+libiscsi
+numactl
+openwsman
+sanlock
+yajl # I think is better compile its before acpica...
+acpica
+xen
+apparmor
+librbd
+cunit
+leveldb
+snappy
+xmlsec
+oath-toolkit
+babeltrace
+erlang-otp
+elixir
+rabbitmq-server
+rabbitmq-c
+librdkafka
+lttng-ust
+cython
+pyelftools
+dpdk
+ceph # I need to review the script to add users, rc, deamons, etc.
+dog
+# numad - maybe in a next release
+libvirt
+libvirt-glib
+libovf-glib
+gtk-frdp
+gnome-boxes
+
+# gst-validate is a dev tool
+# hotdoc - maybe in a next release
+rygel
+gnome-characters
+gnome-clocks
+gnome-contacts
+gnome-font-viewer
+gnome-online-miners
+gnome-photos
+gnome-remote-desktop
+gnome-tour
+gnome-user-share
+
+# GNOME Flashback
+gnome-panel
+gnome-applets
+metacity
+gnome-flashback
+
+# chrome gnome-shell extension
+chrome-gnome-shell
+
+# GNOME Software and Deps - TESTING
+#honggfuzz
+#libxmlb
+#libjcat
+#libconfuse
+#libftdi1
+##genpeimg is a mingw opt dep
+#umockdev
+#codespell
+#flashrom
+#fwupd-efi
+#fwupd
+#gnome-software
+)
+
+message() {
+gfstalk "I need to add $subject $name."
+gfstalk "Is that allright with you ?"
+gfstalk "yes / no"
+read reply
+ case $reply in
+  "yes") gfstalk "Adding $subject $name" ;;
+  "no") gfstalk "Not adding $subject $name" && exit $? ;;
+ esac
+}
+
+# This function is a collaboration of Martin S.I. Tijsma <sali@xs4all.nl>
+# Thanks a lot!
+checkusers() {
+
+if
+    ! grep -q "^avahi:" /etc/group
+then
+    subject=group
+    name=Avahi
+    message
+    groupadd -g 214 avahi
+
+fi
+
+if
+    ! grep -q "^avahi:" /etc/passwd
+then
+    subject=user
+    name=Avahi
+    message
+    useradd -u 214 -g 214 -c "Avahi User" -d /dev/null -s /bin/false avahi
+fi
+
+if
+    ! getent group colord 2>/dev/null 1>/dev/null
+then
+    subject=group
+    name=colord
+    message
+    groupadd -g 303 colord
+fi
+
+if
+    ! getent passwd colord 2>/dev/null 1>/dev/null
+then
+    subject=user
+    name=colord
+    message
+    useradd -d /var/lib/colord -u 303 -g colord -s /bin/false colord
+fi
+
+if
+    ! getent group sanlock 2>/dev/null 1>/dev/null
+then
+    subject=group
+    name=sanlock
+    message
+    groupadd -g 363 sanlock
+fi
+
+if
+    ! getent passwd sanlock 2>/dev/null 1>/dev/null
+then
+    subject=user
+    name=sanlock
+    message
+    useradd -u 363 -d /var/run/sanlock -s /bin/false -g sanlock sanlock
+fi
+
+if
+    ! getent group disk | grep -q sanlock
+then
+    subject=user
+    name=sanlock
+    gfstalk "I need to add $subject $name on disk group."
+    gfstalk "Is that allright with you ?"
+    gfstalk "yes / no"
+    read reply
+    case $reply in
+     "yes") gfstalk "Adding $subject $name" && usermod -a -G disk sanlock ;;
+      "no") gfstalk "Not adding $subject $name" && exit $? ;;
+    esac
+fi
+
+if
+    ! getent group rabbitmq 2>/dev/null 1>/dev/null
+then
+    subject=group
+    name=rabbitmq
+    message
+    groupadd -g 319 rabbitmq
+fi
+
+if
+    ! getent passwd rabbitmq 2>/dev/null 1>/dev/null
+then
+    subject=user
+    name=rabbitmq
+    message
+    useradd -u 319 -g 319 -c "Rabbit MQ" -d /var/lib/rabbitmq -s /bin/sh rabbitmq
+fi
+
+}
+
+checkusers
+
+REBUILDFLATPAK=${REBUILDFLATPAK:-"no"}
+
+for buildpkg in "${PKGBUILD[@]}"; do
+ if [ -z "$(ls /var/log/packages | grep ^$buildpkg-[0-9] | grep _gfs)" ]; then
+  gfstalk "Building $buildpkg..."
+  sleep 1
+  cd $buildpkg
+  OUTPUT=$OUTPUT sh $buildpkg.SlackBuild
+  gfstalk "$buildpkg builded! Installing..."
+  sleep 1
+  PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^$buildpkg-[0-9] | grep _gfs)"}
+  upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+  cd ..
+ elif [ "$buildpkg" == "flatpak" ]; then
+  if [ "$REBUILDFLATPAK" == "yes" ]; then
+   if [ -z "$(ls /var/log/packages | grep ^malcontent-[0-9] | grep _gfs)" ]; then
+    gfstalk "Building flatpak first time..."
+    sleep 1
+    cd flatpak
+    OUTPUT=$OUTPUT sh flatpak.SlackBuild
+    gfstalk "flatpak builded! Installing..."
+    sleep 1
+    PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^flatpak-[0-9] | grep _gfs)"}
+    upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+    rm $OUTPUT/$PKGINST
+    cd ../malcontent
+    gfstalk "Building malcontent..."
+    sleep 1
+    OUTPUT=$OUTPUT sh malcontent.SlackBuild
+    unset PKGINST
+    PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^malcontent-[0-9] | grep _gfs)"}
+    upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+    cd ../flatpak
+    gfstalk "Building flatpak again..."
+    sleep 1
+    OUTPUT=$OUTPUT sh flatpak.SlackBuild
+    gfstalk "flatpak builded again! Installing..."
+    sleep 1
+    unset PKGINST
+    PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^flatpak-[0-9] | grep _gfs)"}
+    upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+    cd ..
+   else
+    gfstalk "malcontent already installed... rebuilding flatpak"
+    sleep 1
+    cd flatpak
+    OUTPUT=$OUTPUT sh flatpak.SlackBuild
+    gfstalk "flatpak builded again! Installing..."
+    sleep 1
+    unset PKGINST
+    PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^flatpak-[0-9] | grep _gfs)"}
+    upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+    cd ..
+   fi
+  else
+   if [ -z "$(ls /var/log/packages | grep ^malcontent-[0-9] | grep _gfs)" ]; then
+    gfstalk "Building malcontent..."
+    sleep 1
+    cd malcontent
+    OUTPUT=$OUTPUT sh malcontent.SlackBuild
+    unset PKGINST
+    PKGINST=${BUILDPKG:-"$(ls $OUTPUT | grep ^malcontent-[0-9] | grep _gfs)"}
+    upgradepkg --install-new --reinstall $OUTPUT/$PKGINST
+    cd ..
+   else
+     gfstalk "malcontent already installed!"
+   fi
+  fi
+ else
+  gfstalk "$buildpkg is already installed!"
+ fi
+done
+
+gfstalk
+gfstalk "All done!"
+gfstalk "--------"
+

@@ -1,0 +1,125 @@
+#!/bin/sh
+#
+# Slackware build script for LevelDB
+# Written by Mário Antunes (mario.antunes@av.it.pt)
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Build with snappy
+SNAPPY=${SNAPPY:-yes}
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=1.9.0
+fi
+
+MDSCHK=12f11385cb58ae0de66d4bc2cc7f8194
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://src.fedoraproject.org/repo/pkgs/leveldb/leveldb-$VERSION.tar.gz/12f11385cb58ae0de66d4bc2cc7f8194/leveldb-$VERSION.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+echo "echo \"PLATFORM_CFLAGS+=$SLKCFLAGS\" >> build_config.mk" >> build_detect_platform
+echo "echo \"PLATFORM_CXXFLAGS+=$SLKCFLAGS\" >> build_config.mk" >> build_detect_platform
+make $JOBS || make
+
+mkdir -p $PKG/usr/include/leveldb
+install include/leveldb/*.h $PKG/usr/include/leveldb
+
+mkdir -p $PKG/usr/lib$LIBDIRSUFFIX
+cp -a libleveldb.so* $PKG/usr/lib$LIBDIRSUFFIX
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | \
+ grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a README $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a doc/* $PKG/usr/doc/$PRGNAM-$VERSION
+find $PKG/usr/doc/$PRGNAM-$VERSION -type f -exec chmod 644 {} \;
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: leveldb (Google key-vale database)
+$PRGNAM:
+$PRGNAM: LevelDB is an open source on-disk key-value store written by Google
+$PRGNAM: Fellows Jeffrey Dean and Sanjay Ghemawat, who built parts of Google's
+$PRGNAM: platform. Inspired by BigTable, LevelDB is hosted on Google Code
+$PRGNAM: under the New BSD License and has been ported to a variety of
+$PRGNAM: Unix-based systems, Mac OS X, Windows, and Android. webOS's DB8
+$PRGNAM: database service uses it as a backend.
+$PRGNAM:
+$PRGNAM: https://github.com/google/leveldb
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

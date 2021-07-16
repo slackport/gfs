@@ -1,0 +1,147 @@
+#!/bin/sh
+
+# Slackware build script for yajl
+
+# Written by Eugene Wissner <belka.ew@gmail.com>
+# Updated by Marcin Herda <mherda@slackword.net>
+# Updated by Johannes Schoepfer
+#
+# Copyright (c) 2019, Modified by: Ricardo J. Barberis <ricardo.barberis@gmail.com>
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "lloyd-$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f3 -d- | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=2.1.0
+fi
+
+MDSCHK=8df8a92a2799bc949577e8e7a9f43670
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"http://github.com/lloyd/yajl/tarball/2.1.0/lloyd-yajl-$VERSION-0-ga0ecdde.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "lloyd-$PRGNAM-$VERSION-0-ga0ecdde.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo lloyd-$PRGNAM-$VERSION-0-ga0ecdde.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf lloyd-$PRGNAM-$VERSION-0-ga0ecdde.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf lloyd-$PRGNAM-66cb08c
+tar xvf $CWD/lloyd-$PRGNAM-$VERSION-0-ga0ecdde.tar.gz
+cd lloyd-$PRGNAM-66cb08c
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir build
+cd build
+  cmake .. \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLIB_SUFFIX:STRING="$LIBDIRSUFFIX" \
+    -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+  make $JOBS || make
+  make DESTDIR=$PKG install
+cd -
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG -name '*.a' -delete
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a BUILDING COPYING ChangeLog README TODO $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: yajl (Yet Another JSON Library)
+$PRGNAM:
+$PRGNAM: YAJL is a small event-driven (SAX-style) JSON parser written in
+$PRGNAM: ANSI C, and a small validating JSON generator. YAJL is released under
+$PRGNAM: the ISC license.
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM: http://lloyd.github.com/yajl/
+$PRGNAM:
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+
+

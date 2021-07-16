@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# Slackware build script for gtest
+
+# 2013-02-12 Bernski Comadizo <bcomadizo@gmail.com> Cebu
+# Copyright 2016  Dimitris Zlatanidis  Orestiada, Greece
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+#
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=gtest
+SRCNAM=googletest
+VERSION=${VERSION:-$(echo $SRCNAM-release-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-release-$VERSION
+tar -xvf $CWD/$SRCNAM-release-$VERSION.tar.gz
+cd $SRCNAM-release-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+patch -p1 -i $CWD/gtest-PR2491-Fix-gnu-install-dirs-pkg-config.patch
+patch -p1 -i $CWD/gtest-PR2556-pkg-config-Remove-pthread-link-flag-from-Cflags.patch
+
+mkdir -p build
+cd build
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=lib$LIBDIRSUFFIX \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_SKIP_RPATH=ON \
+    -DCMAKE_BUILD_TYPE=Release ..
+  make $JOBS || make
+cd ..
+
+mkdir -p $PKG/usr/lib$LIBDIRSUFFIX $PKG/usr/include/$PRGNAM/internal/custom \
+    $PKG/usr/include/gmock/internal/custom
+
+install -m 0644 googlemock/include/gmock/*.h $PKG/usr/include/gmock
+install -m 0644 googlemock/include/gmock/internal/*.h $PKG/usr/include/gmock/internal/
+install -m 0644 googlemock/include/gmock/internal/custom/*.h \
+    $PKG/usr/include/gmock/internal/custom
+
+install -m 0644 googletest/include/$PRGNAM/*.h $PKG/usr/include/$PRGNAM/
+install -m 0644 googletest/include/$PRGNAM/internal/*.h $PKG/usr/include/$PRGNAM/internal/
+install -m 0644 googletest/include/$PRGNAM/internal/custom/*.h \
+    $PKG/usr/include/$PRGNAM/internal/custom
+
+# install the libs and the pkgconfig files!
+install -m 0644 build/lib/*.so $PKG/usr/lib$LIBDIRSUFFIX
+mkdir -p $PKG/usr/lib$LIBDIRSUFFIX/pkgconfig
+for i in gmock gmock_main gtest gtest_main ; do
+  sed "s| -lpthread||g" build/googletest/generated/${i}.pc \
+    > $PKG/usr/lib$LIBDIRSUFFIX/pkgconfig/${i}.pc
+done
+
+mkdir -p $PKG/usr/src
+cp -R googlemock $PKG/usr/src
+cp -R googletest /$PKG/usr/src
+# Create symlinks as some programs look for the shorter names
+(cd $PKG/usr/src ; ln -svf googlemock gmock ; ln -svf googletest gtest)
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

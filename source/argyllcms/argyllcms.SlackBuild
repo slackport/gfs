@@ -1,0 +1,119 @@
+#!/bin/sh
+
+# Slackware script for argyllcms
+
+# Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Based on Archlinux PKGBUILD Script (Thanks a lot!):
+# https://github.com/archlinux/svntogit-community/blob/packages/argyllcms/trunk/PKGBUILD
+# Based on Gentoo ebuild script (Thanks so much!):
+# https://gitweb.gentoo.org/repo/gentoo.git/tree/media-gfx/argyllcms/argyllcms-2.2.0.ebuild
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+wget -c --no-check-certificate https://www.argyllcms.com/Argyll_V2.2.0_src.zip
+
+PRGNAM="argyllcms"
+SRCNAM="Argyll"
+VERSION=${VERSION:-$(echo $SRCNAM_*.zip | rev | cut -f 2- -d _ | cut -f 1 -d V | rev)}
+SRCVERSION="V${VERSION}"
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-$(echo -j"$(getconf _NPROCESSORS_ONLN)")}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $TMP/"$SRCNAM"_"$SRCVERSION" $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+unzip $CWD/${SRCNAM}_${SRCVERSION}_src.zip
+cd ${SRCNAM}_${SRCVERSION}
+
+chown -R root.root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 750 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 640 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+echo "STDLIBS += -ldl -lrt -lX11 -lXext -lXxf86vm -lXinerama -lXrandr -lXau -lXdmcp -lXss -ltiff -ljpeg ;" >> Jamtop
+
+sed -e 's:CCFLAGS:CFLAGS:g' -i Jambase || false
+
+if [ "$ARCH" = "x86_64" ]; then
+  sed -e 's:-m64 ;:-m64 -fPIC ;:g' -i Jambase || false
+  sed -e 's:-m64 ;:-m64 -fPIC ;:g' -i Jambase || false
+fi
+
+OSTYPE=linux-gnu \
+MACHTYPE=x86_64-slackware-linux \
+HOSTTYPE=x86_64 \
+jam -dx -fJambase $JOBS -sPREFIX=/usr -sDESTDIR=$PKG -sREFSUBDIR=share/color/argyll/ref all
+
+OSTYPE=linux-gnu \
+MACHTYPE=x86_64-slackware-linux \
+HOSTTYPE=x86_64 \
+jam -dx -fJambase $JOBS -sPREFIX=/usr -sDESTDIR=$PKG -sREFSUBDIR=share/color/argyll/ref install
+
+rm -f $PKG/usr/bin/License.txt
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a License* Readme.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$(basename $0) > $PKG/usr/doc/$PRGNAM-$VERSION/$(basename $0)
+
+mkdir -p $PKG/lib/udev/rules.d
+install -m 0644 usb/55-Argyll.rules $PKG/lib/udev/rules.d
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/ccmxs
+install -m 0644 doc/ccmxs/*.ccmx $PKG/usr/doc/$PRGNAM-$VERSION/ccmxs
+install -m 0644 doc/*.* $PKG/usr/doc/$PRGNAM-$VERSION/
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

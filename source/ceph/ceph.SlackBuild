@@ -1,0 +1,240 @@
+#!/bin/sh
+
+# Slackware build script for ceph
+
+# Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/pkg-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) / 2 ) "}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-march=i486 -mtune=i686 -lncurses"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-march=i686 -mtune=i686 -lncurses"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-fPIC -lncurses"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O3 -lncurses"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=16.2.5
+fi
+
+MDSCHK=5616f2d1e534639c248c4d33c59cabab
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://download.ceph.com/tarballs/ceph-$VERSION.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+echo "Extracting tarball..."
+tar xf $CWD/$PRGNAM-$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
+
+chown -R root:root .
+
+patch -Np1 -i $CWD/patches/ceph-12.2.0-use-provided-cpu-flag-values.patch
+patch -Np1 -i $CWD/patches/ceph-14.2.0-cflags.patch
+patch -Np1 -i $CWD/patches/ceph-12.2.4-boost-build-none-options.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.2-cflags.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.2-no-virtualenvs.patch
+patch -Np1 -i $CWD/patches/ceph-14.2.0-dpdk-cflags.patch
+patch -Np1 -i $CWD/patches/ceph-14.2.0-cython-0.29.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.0-rocksdb-cmake.patch
+patch -Np1 -i $CWD/patches/ceph-15.2.3-spdk-compile.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.0-install-libblk.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.0-spdk-tinfo.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.0-jaeger-system-boost.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.0-liburing.patch
+patch -Np1 -i $CWD/patches/ceph-16.2.2-system-zstd.patch
+
+# remove tests that need root access
+rm -f src/test/cli/ceph-authtool/cap*.t
+
+mkdir -p build
+cd build
+
+cmake .. \
+ -DCMAKE_C_FLAGS="$SLKCFLAGS" \
+ -DCMAKE_CXX_FLAGS="$SLKCFLAGS" \
+ -DCMAKE_MODULE_LINKER_FLAGS="-lncurses" \
+ -DCMAKE_BUILD_TYPE=Release \
+ -DCMAKE_INSTALL_PREFIX=/usr \
+ -DCMAKE_INSTALL_SYSCONFDIR=/etc \
+ -DCEPH_MAN_DIR=/usr/man \
+ -DCMAKE_INSTALL_DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+ -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
+ -DCMAKE_INSTALL_INFODIR=/usr/info \
+ -DCMAKE_INSTALL_MANDIR=/usr/man \
+ -DWITH_BLUESTORE_PMEM=OFF \
+ -DWITH_DPDK=OFF \
+ -DWITH_RDMA=OFF \
+ -DWITH_TBB=OFF \
+ -DWITH_SYSTEMD=OFF \
+ -DWITH_RBD_RWL=OFF \
+ -DWITH_RBD_SSD_CACHE=OFF \
+ -DWITH_ZBD=OFF \
+ -DWITH_TESTS=OFF \
+ -DWITH_MGR_DASHBOARD_FRONTEND=OFF \
+ -DWITH_STATIC_LIBSTDCXX=OFF \
+ -DWITH_SYSTEM_ROCKSDB=OFF \
+ -DCMAKE_VERBOSE_MAKEFILE=ON \
+ -DWITH_REENTRANT_STRSIGNAL=ON \
+ -DENABLE_SHARED=ON \
+ -DWITH_BABELTRACE=ON \
+ -DWITH_CEPHFS=ON \
+ -DWITH_CEPHFS_SHELL=ON \
+ -DWITH_SPDK=ON \
+ -DWITH_FUSE=ON \
+ -DWITH_LTTNG=ON \
+ -DWITH_GSSAPI=ON \
+ -DWITH_GRAFANA=ON \
+ -DWITH_MGR=ON \
+ -DWITH_OPENLDAP=ON \
+ -DWITH_PYTHON3=3 \
+ -DWITH_RADOSGW=OFF \
+ -DWITH_RADOSGW_AMQP_ENDPOINT=OFF \
+ -DWITH_RADOSGW_KAFKA_ENDPOINT=OFF \
+ -DWITH_RADOSGW_LUA_PACKAGES=OFF \
+ -DWITH_LIBURING=ON \
+ -DWITH_SYSTEM_LIBURING=ON \
+ -DWITH_LIBCEPHSQLITE=ON \
+ -DWITH_XFS=ON \
+ -DWITH_ZFS=ON \
+ -DWITH_SYSTEM_PMDK=ON \
+ -DWITH_SYSTEM_BOOST=ON \
+ -Wno-dev
+
+export LDFLAGS="-lncurses"
+
+pushd src/pybind
+make clean
+make $JOBS all || make -j1 all
+popd
+
+make $JOBS all || make -j1 all
+DESTDIR=$PKG make install
+
+pushd src/pybind
+make DESTDIR=$PKG install
+popd
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+find $PKG -name '*.la' -delete
+
+cd ..
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a AUTHORS CONTRIBUTING.rst COPYING* README.md \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$(basename $0) > $PKG/usr/doc/$PRGNAM-$VERSION/$(basename $0)
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: Ceph
+$PRGNAM:
+$PRGNAM: Ceph is a distributed object, block, and file storage platform.
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM:
+$PRGNAM: https://ceph.com/
+$PRGNAM:
+EOT
+
+cat <<\EOT >$PKG/install/doinst.sh
+if [ -x /usr/bin/update-mime-database ]; then
+  /usr/bin/update-mime-database /usr/share/mime &> /dev/null
+fi
+
+if [ -x /usr/bin/update-desktop-database ]; then
+  /usr/bin/update-desktop-database -q usr/share/applications >/dev/null 2>&1
+fi
+
+if [ -e usr/share/icons/hicolor/icon-theme.cache ]; then
+  if [ -x /usr/bin/gtk-update-icon-cache ]; then
+    /usr/bin/gtk-update-icon-cache usr/share/icons/hicolor >/dev/null 2>&1
+  fi
+fi
+
+if [ -e usr/share/glib-2.0/schemas ]; then
+  if [ -x /usr/bin/glib-compile-schemas ]; then
+    /usr/bin/glib-compile-schemas usr/share/glib-2.0/schemas >/dev/null 2>&1
+  fi
+fi
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

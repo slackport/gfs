@@ -1,0 +1,302 @@
+#!/bin/sh
+
+# Slackware build script for xen
+
+# Copyright 2010, 2011, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020  Mario Preksavec, Zagreb, Croatia
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021),
+# Based on ArchLinux PKGBUILD script (Thanks a lot!):
+# https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=xen
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=$(basename $0 | cut -f1 -d.)
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+  if [ ! -e /usr/include/gnu/stubs-32.h ]; then
+   ln -vs /usr/include/gnu/stubs-64.h /usr/include/gnu/stubs-32.h
+  fi
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+CONF_XEN="--disable-rombios"
+CONF_QEMUU="--sysconfdir=/etc"
+
+case "${BUILD_STUBDOM:-yes}" in
+  yes) CONF_XEN+=" --enable-stubdom" ;;
+    *) CONF_XEN+=" --disable-stubdom" ;;
+esac
+
+case "${WITH_OVMF:-no}" in
+  no) CONF_XEN+=" --disable-ovmf" ;;
+   *) case "$ARCH" in
+        i?86) cat << EOF
+
+  Disabling 32bit EFI/UEFI guest support (WITH_OVMF=no)
+
+EOF
+              CONF_XEN+=" --disable-ovmf" ;;
+           *) CONF_XEN+=" --enable-ovmf" ;;
+      esac
+esac
+
+case "${USE_LIBSSH:-yes}" in
+  yes) CONF_QEMUU+=" --enable-libssh" ;;
+    *) CONF_QEMUU+=" --disable-libssh" ;;
+esac
+
+case "${USE_GTK:-yes}" in
+  yes) CONF_QEMUU+=" --enable-gtk" ;;
+    *) CONF_QEMUU+=" --disable-gtk" ;;
+esac
+
+case "${USE_SPICE:-yes}" in
+  yes) CONF_QEMUU+=" --enable-spice" ;;
+    *) CONF_QEMUU+=" --disable-spice" ;;
+esac
+
+case "${USE_AUDIO:-yes}" in
+  yes) CONF_QEMUU+="" ;;
+   no) CONF_QEMUU+=" --audio-drv-list=" ;;
+    *) CONF_QEMUU+=" --audio-drv-list=$USE_AUDIO" ;;
+esac
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+OPTDEP=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=4.15.0
+fi
+
+MDSCHK=899d5b9dd6725543cf3b224de9a5d27a
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://downloads.xenproject.org/release/xen/$VERSION/xen-$VERSION.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+echo "Extracting tarball..."
+tar xf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+patch -Np1 -i $CWD/no-ld-no-pie.patch
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --libexecdir=/usr/libexec \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  $CONF_XEN \
+  --enable-githttp \
+  --enable-tools \
+  --disable-qemu-traditional \
+  --with-extra-qemuu-configure-args="$CONF_QEMUU" \
+  --build=$ARCH-slackware-linux
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+make $JOBS || make
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+make $JOBS install-xen \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+make $JOBS install-tools \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+if [ "$BUILD_STUBDOM" = "yes" ]; then
+  CFLAGS="$SLKCFLAGS" \
+  CXXFLAGS="$SLKCFLAGS" \
+  make $JOBS install-stubdom \
+    docdir=/usr/doc/$PRGNAM-$VERSION \
+    DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+    mandir=/usr/man \
+    MANDIR=/usr/man \
+    DESTDIR=$PKG
+fi
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+make $JOBS install-docs \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+# Remove useless symlinks in boot/
+find $PKG/boot/ -type l -a -name "xen-*" -exec rm -f {} \; 2>/dev/null || true
+
+# Move from SYSV to BSD init scripts
+( cd $PKG/etc/rc.d/init.d && for i in * ; do mv $i ../rc.$i.new ; done )
+
+# Remove empty directories
+rmdir $PKG/etc/rc.d/init.d/
+
+# Append .new to config files
+for i in $PKG/etc/{default/*,xen/*.conf} ; do mv $i $i.new ; done
+
+# Remove some executable flags
+chmod -x $PKG/usr/libexec/xen/boot/*.gz 2>/dev/null || true
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+if [ "${INSTALL_OPENVSWITCH_EXTENDED:-yes}" != "no" ]; then
+  install -m777 -oroot -groot $CWD/openvswitch/vif-openvswitch-extended \
+    $PKG/etc/xen/scripts/vif-openvswitch-extended
+  install -m777 -oroot -groot $CWD/openvswitch/openvswitch-clean.sh \
+    $PKG/usr/bin/openvswitch-clean
+  cp $CWD/openvswitch/openvswitch.conf $PKG/etc/xen/openvswitch.conf.new
+  cp $CWD/openvswitch/README.openvswitch-extended $PKG/usr/doc/$PRGNAM-$VERSION
+else
+  cp -r $CWD/openvswitch $PKG/usr/doc/$PRGNAM-$VERSION
+fi
+
+cp -r COPYING MAINTAINERS README $CWD/{dom0,domU} $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: xen (the Xen virtualization hypervisor)
+$PRGNAM:
+$PRGNAM: The Xen hypervisor, the powerful open source industry standard for
+$PRGNAM: virtualization, offers a powerful, efficient, and secure feature set
+$PRGNAM: for virtualization of x86, x86_64, IA64, ARM, and other CPU
+$PRGNAM: architectures. It supports a wide range of guest operating systems
+$PRGNAM: including Windows, Linux, Solaris, and various versions of the BSD
+$PRGNAM: operating systems.
+$PRGNAM:
+$PRGNAM: Homepage: http://www.xenproject.org/
+EOT
+
+cat <<\EOT >$PKG/install/doinst.sh
+config() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  # If there's no config file by that name, mv it over:
+  if [ ! -r $OLD ]; then
+    mv $NEW $OLD
+  elif [ "$(cat $OLD | md5sum)" = "$(cat $NEW | md5sum)" ]; then
+    # toss the redundant copy
+    rm $NEW
+  fi
+  # Otherwise, we leave the .new copy for the admin to consider...
+}
+
+preserve_perms() {
+  NEW="$1"
+  OLD="$(dirname $NEW)/$(basename $NEW .new)"
+  if [ -e $OLD ]; then
+    cp -a $OLD ${NEW}.incoming
+    cat $NEW > ${NEW}.incoming
+    mv ${NEW}.incoming $NEW
+  fi
+  config $NEW
+}
+
+find etc/rc.d -type f -name 'rc.xen*.new' \
+  | while read new ; do preserve_perms $new ; done
+
+find etc/default -type f -name 'xen*.new' \
+  | while read new ; do config $new ; done
+
+find etc/xen -type f -name '*.new' \
+  | while read new ; do config $new ; done
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+

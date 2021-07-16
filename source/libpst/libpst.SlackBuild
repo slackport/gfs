@@ -1,0 +1,171 @@
+#!/bin/sh
+
+# Slackware build script for libpst
+
+# Copyright 2011-2012 Roberto Neri, Palermo, Italy
+# Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# 20201025 bkw: upgrade to 0.6.75
+# 20200224 bkw: upgrade to 0.6.74
+# 20180917 bkw: upgrade to 0.6.72
+# 20170122 bkw: upgrade to 0.6.69
+# 20161017 bkw: upgrade to 0.6.68
+# 20160803 bkw: upgrade to 0.6.67
+# 20150513 bkw: upgrade to 0.6.64
+
+# 20140314 bkw
+# - took over maintenance
+# - upgrade to 0.6.63
+# - make install-strip instead of slow find stuff
+
+PRGNAM=libpst
+VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_gfs}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/gfs}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+UMASKBKP=$(umask)
+umask 0022
+
+DEPCHK=""
+
+if [ -z $VERSION ]
+ then
+ VERSION=0.6.76
+fi
+
+MDSCHK=e821b94e8d7790ee314059f751182ebf
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
+SRCDOWN=${SRCDOWN:-"https://www.five-ten-sg.com/libpst/packages/libpst-$VERSION.tar.gz"}
+
+if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
+then
+ $DWNLCMD $SRCDOWN
+else
+ if md5sum -c <<<"$MDSCHK $(echo $PRGNAM-$VERSION.tar.?z*)";
+  then
+   continue
+  else
+   rm -rf $PRGNAM-$VERSION.tar.?z*
+   $DWNLCMD $SRCDOWN
+ fi
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+libtoolize --install --copy --force
+autoreconf -vif
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+ --prefix=/usr \
+ --libdir=/usr/lib${LIBDIRSUFFIX} \
+ --mandir=/usr/man \
+ --enable-dii \
+ --enable-shared=yes \
+ --disable-static \
+ --enable-libpst-shared \
+ --enable-python \
+ --build=$ARCH-slackware-linux
+
+sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+
+make $JOBS || make
+# ./configure options --docdir and --htmldir have no effect,
+# it is necessary to override "htmldir" and "htmldeveldir"
+make install-strip DESTDIR=$PKG \
+  htmldir=/usr/doc/$PRGNAM-$VERSION \
+  htmldeveldir=/usr/doc/$PRGNAM-$VERSION/devel
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG -name '*.la' -delete
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+#      |-----handy-ruler------------------------------------------------------|
+cat <<EOT >$PKG/install/slack-desc
+$PRGNAM:
+$PRGNAM: libpst (MS Outlook Personal Folders converter)
+$PRGNAM:
+$PRGNAM: The libpst project includes a library and a set of utilities to
+$PRGNAM: decode and convert MS Outlook PST files.
+$PRGNAM:
+$PRGNAM: readpst  - convert PST files to mbox and other formats
+$PRGNAM: lspst    - list PST (MS Outlook Personal Folders) file data
+$PRGNAM: pst2ldif - extract contacts from a PST file in .ldif format
+$PRGNAM: pst2dii  - extract email messages from a PST file in DII load format
+$PRGNAM:
+$PRGNAM: Homepage: http://www.five-ten-sg.com/libpst/
+EOT
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+
+umask ${UMASKBKP}
+
