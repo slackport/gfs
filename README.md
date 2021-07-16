@@ -13,7 +13,7 @@
  100% Compatible with slackware64-current.
 
 ### How to compile and use GNOME 40
- In console, type:
+ In console (root), type:
  1. git clone https://github.com/slackport/gfs
  2. cd gfs
  3. sh gfs autopkg
