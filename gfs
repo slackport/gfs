@@ -364,7 +364,6 @@ dbus-test-runner
 libaccounts-glib
 telepathy-mission-control
 #fop
-xmlto
 plymouth
 audit
 freerdp
