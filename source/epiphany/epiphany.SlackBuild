@@ -91,8 +91,6 @@ meson .. \
  -Dtech_preview=false \
  -Dunit_tests=disabled
 
-# -Dgsb_api_key="AIzaSyDSMrvXaIXJgqiKswJ0vkgOv-cUfwUCTsE"
-
 ninja $JOBS || ninja
 DESTDIR=$PKG ninja install
 
