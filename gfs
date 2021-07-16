@@ -145,6 +145,7 @@ fi
 }
 
 makegfspkg() {
+cd $GFSCWD
 mkdir -p pkg/opt/gfs
 mv TODO gfs README.md source pkg/opt/gfs/
 cd pkg
@@ -167,7 +168,9 @@ slackport-gfs:
 EOT
 makepkg -l y -c n $OUTPUT/slackport-gfs-$GFSVERSION-x86_64-1_gfs.txz
 cd ..
-rm -rf pkg
+rm -rf pkg/
+cd ..
+rm -rf gfs/
 }
 
 gfsversion() {
