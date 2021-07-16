@@ -23,7 +23,8 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 GFSVERSION=0.2.9
-GFSSOURCEDIR=/opt/slackport/source
+GFSSOURCEDIR=./source
+GFSCWD=$(pwd)
 OUTPUT=/tmp
 GFSEDITOR=nano
 
@@ -144,13 +145,12 @@ fi
 }
 
 makegfspkg() {
-GFSDIRECTION=$(echo $GFSSOURCEDIR | rev | cut -f3- -d'/' | rev)
-cd $GFSDIRECTION
-mkdir -p pkg/opt
-mv slackport pkg/opt
+cd $GFSCWD/..
+mkdir -p pkg/opt/gfs
+mv TODO gfs README.md source pkg/opt/gfs/
 cd pkg
 mkdir -p usr/sbin
-ln -s $GFSDIRECTION/slackport/gfs usr/sbin/gfs
+ln -s $GFSPWD/gfs usr/sbin/gfs
 mkdir -p install
 #            |-----handy-ruler------------------------------------------------------|
 cat <<EOT >install/slack-desc
@@ -168,7 +168,6 @@ slackport-gfs:
 EOT
 makepkg -l y -c n $OUTPUT/slackport-gfs-$GFSVERSION-x86_64-1_gfs.txz
 cd ..
-mv pkg/opt/slackport .
 rm -rf pkg
 }
 
