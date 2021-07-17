@@ -10,14 +10,14 @@
 
 ### Compatibilty
  
- 100% Compatible with slackware64-current.
+100% Compatible with slackware64-current.
 
 ### Download and Install Compiled Packages
- 1. Use a web browser to download:
- [slackport-gfs-pkg64.tar.xz](https://drive.google.com/u/1/uc?id=15-VyFtpMbp8Xl36YKjzGtgIydOrzFJkw&export=download)
- 2. Open a console, login root, and type:
- 3. tar xf slackport-gfs-pkg64.tar.xz
- 4. upgradepkg --install-new --reinstall slackport-gfs-pkg64/*.txz
+1. Use a web browser to download:
+[slackport-gfs-pkg64.tar.xz](https://drive.google.com/u/1/uc?id=15-VyFtpMbp8Xl36YKjzGtgIydOrzFJkw&export=download)
+2. Open a console, login root, and type:
+    tar xf slackport-gfs-pkg64.tar.xz
+    upgradepkg --install-new --reinstall slackport-gfs-pkg64/*.txz
 
 ### Configuring
 
