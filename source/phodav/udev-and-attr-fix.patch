@@ -1,9 +1,18 @@
-Description: Optional udev without systemd need and attr header dir fix.
-Author: Rafael Tavares <mdrafaeltavares@gmail.com>
-
-diff -u phodav-2.3/meson.build phodav-2.3.new/meson.build
+diff -ur phodav-2.3/libphodav/phodav-method-proppatch.c phodav-2.3.new/libphodav/phodav-method-proppatch.c
+--- phodav-2.3/libphodav/phodav-method-proppatch.c	2019-02-26 15:12:17.000000000 -0300
++++ phodav-2.3.new/libphodav/phodav-method-proppatch.c	2021-07-16 23:43:54.276769095 -0300
+@@ -22,7 +22,7 @@
+ 
+ #include <sys/types.h>
+ #ifdef HAVE_ATTR_XATTR_H
+-#include <attr/xattr.h>
++#include <sys/xattr.h>
+ #endif
+ 
+ 
+diff -ur phodav-2.3/meson.build phodav-2.3.new/meson.build
 --- phodav-2.3/meson.build	2019-02-26 15:12:17.000000000 -0300
-+++ phodav-2.3.new/meson.build	2021-06-30 10:35:04.422526961 -0300
++++ phodav-2.3.new/meson.build	2021-07-16 23:43:25.438767159 -0300
 @@ -53,7 +53,7 @@
    )
  endif
@@ -22,9 +31,9 @@ diff -u phodav-2.3/meson.build phodav-2.3.new/meson.build
    conf.set('HAVE_ATTR_XATTR_H', 1)
  endif
  
-diff -u phodav-2.3/meson_options.txt phodav-2.3.new/meson_options.txt
+diff -ur phodav-2.3/meson_options.txt phodav-2.3.new/meson_options.txt
 --- phodav-2.3/meson_options.txt	2019-02-26 15:12:17.000000000 -0300
-+++ phodav-2.3.new/meson_options.txt	2021-06-30 10:33:33.023527988 -0300
++++ phodav-2.3.new/meson_options.txt	2021-07-16 23:43:25.438767159 -0300
 @@ -10,6 +10,10 @@
         type : 'feature',
         description : 'Install systemd units/configuration')
@@ -36,5 +45,3 @@ diff -u phodav-2.3/meson_options.txt phodav-2.3.new/meson_options.txt
  option('build-id',
         type : 'integer',
         value : 0,
-Common subdirectories: phodav-2.3/po and phodav-2.3.new/po
-Common subdirectories: phodav-2.3/spice and phodav-2.3.new/spice

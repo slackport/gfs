@@ -68,7 +68,7 @@ OPTDEP=""
 
 if [ -z $VERSION ]
  then
- VERSION=2.5
+ VERSION=2.3
 fi
 
 MDSCHK=0f4bbe83181037577c808acea166b26a
