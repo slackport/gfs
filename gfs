@@ -416,7 +416,7 @@ mm-common # is a dev tool, I think we dont need it, but just in case...
 liblouis
 pyatspi
 gupnp-av
-gstreamer-editing-services
+gst-editing-services
 libzapojit
 
 gnome-autoar
