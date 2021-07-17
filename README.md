@@ -22,26 +22,52 @@ upgradepkg --install-new --reinstall slackport-gfs-pkg64/*.txz
 ```
 
 ### Configuring
-
-
+You need to add some groups and users to make things work better (I think), so:
+1. In console (root), type:
+```bash
+groupadd -g 214 avahi
+useradd -u 214 -g 214 -c "Avahi User" -d /dev/null -s /bin/false avahi
+groupadd -g 303 colord
+useradd -d /var/lib/colord -u 303 -g colord -s /bin/false colord
+groupadd -g 363 sanlock
+useradd -u 363 -d /var/run/sanlock -s /bin/false -g sanlock sanlock
+usermod -a -G disk sanlock
+groupadd -g 319 rabbitmq
+useradd -u 319 -g 319 -c "Rabbit MQ" -d /var/lib/rabbitmq -s /bin/sh rabbitmq
+```
+2. Avahi need to be run at boot, so edit your /etc/rc.d/rc.local adding this lines:
+```bash
+# Start avahidaemon
+if [ -x /etc/rc.d/rc.avahidaemon ]; then
+ /etc/rc.d/rc.avahidaemon start
+fi
+# Start avahidnsconfd
+if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
+  /etc/rc.d/rc.avahidnsconfd start
+fi
+```
 ### How to compile and use GNOME 40
- In console (root), type:
- 1. git clone https://github.com/slackport/gfs
- 2. cd gfs
- 3. sh gfs
- 4. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
- 5. Make sure gdm is the first one to run in the /etc/rc.d/rc.4 
- 6. Reboot your system.
- 7. Use 'startx' to choose GNOME (or Flashback).
+ 1. In console (root), type:
+```bash
+git clone https://github.com/slackport/gfs
+cd gfs
+sh gfs
+```
+ 2. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
+ 3. Make sure gdm is the first one to run in the /etc/rc.d/rc.4 
+ 4. Reboot your system.
+ 5. Use 'startx' to choose GNOME (or Flashback).
 
 ### If you want do make a slackport-gfs package
- In console (root), type:
- 1. git clone https://github.com/slackport/gfs
- 2. cd gfs
- 3. sh gfs autopkg
- 3. cd .. && rm -rf gfs
- 5. upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
- 6. gfs -help
+In console (root), type:
+```bash
+git clone https://github.com/slackport/gfs
+cd gfs
+sh gfs autopkg
+cd .. && rm -rf gfs
+upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
+gfs -help
+```
 
 ### Things you should know
 - The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
