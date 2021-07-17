@@ -417,6 +417,7 @@ liblouis
 pyatspi
 gupnp-av
 gst-editing-services
+gnome-online-accounts
 libzapojit
 
 gnome-autoar
@@ -424,7 +425,6 @@ gnome-desktop
 gnome-bluetooth
 gnome-color-manager
 gnome-settings-daemon
-gnome-online-accounts
 gnome-video-effects
 cheese
 gnome-control-center
