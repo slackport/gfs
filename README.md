@@ -3,10 +3,10 @@
 
 ### Introduction
 
-The first question you should ask yourself is: 'if I don't like the GNOME, what am I doing here?'
-I'm talking about clarity, simplicity... I'm talking about tranquility and comfort... of course, everything have a price...
-And if you don't understand this, you're wasting your time reading me!
-This is GNOME 40... from Scratch (for Slackware)!
+ The first question you should ask yourself is: 'if I don't like the GNOME, what am I doing here?'
+ I'm talking about clarity, simplicity... I'm talking about tranquility and comfort... of course, everything have a price...
+ And if you don't understand this, you're wasting your time reading me!
+ This is GNOME 40... from Scratch (for Slackware)!
 
 ### Compatibilty
  
