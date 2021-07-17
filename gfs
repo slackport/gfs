@@ -490,7 +490,7 @@ yajl # I think is better compile its before acpica...
 acpica
 xen
 apparmor
-librbd
+librdkafka
 cunit
 leveldb
 snappy
