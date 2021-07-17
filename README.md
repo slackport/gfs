@@ -35,7 +35,7 @@ usermod -a -G disk sanlock
 groupadd -g 319 rabbitmq
 useradd -u 319 -g 319 -c "Rabbit MQ" -d /var/lib/rabbitmq -s /bin/sh rabbitmq
 ```
-2. Avahi need to be run at boot, so edit your `/etc/rc.d/rc.local` adding this lines:
+2. Avahi need to be run at boot, so edit your `/etc/rc.d/rc.local` adding these lines:
 ```bash
 # Start avahidaemon
 if [ -x /etc/rc.d/rc.avahidaemon ]; then
@@ -46,7 +46,7 @@ if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
   /etc/rc.d/rc.avahidnsconfd start
 fi
 ```
-3. Also stop Avahi at shutdown, so edit your `/etc/rc.d/rc.local_shutdown` add this lines:
+3. Also stop Avahi at shutdown, so edit your `/etc/rc.d/rc.local_shutdown` adding these lines:
 ```bash
 # Stop avahidnsconfd
 if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
@@ -73,7 +73,8 @@ sh gfs
  2. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
  3. Make sure gdm is the first one to run in the /etc/rc.d/rc.4 
  4. Reboot your system.
- 5. Use 'startx' to choose GNOME (or Flashback).
+ 5. Use `xwmconfig` to choose GNOME (or Flashback)
+ 6. Start using `startx`
 
 ### If you want do make a slackport-gfs package
 In console (root), type:
