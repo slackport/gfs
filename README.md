@@ -35,7 +35,7 @@ usermod -a -G disk sanlock
 groupadd -g 319 rabbitmq
 useradd -u 319 -g 319 -c "Rabbit MQ" -d /var/lib/rabbitmq -s /bin/sh rabbitmq
 ```
-2. Avahi need to be run at boot, so edit your /etc/rc.d/rc.local adding this lines:
+2. Avahi need to be run at boot, so edit your `/etc/rc.d/rc.local` adding this lines:
 ```bash
 # Start avahidaemon
 if [ -x /etc/rc.d/rc.avahidaemon ]; then
@@ -46,6 +46,23 @@ if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
   /etc/rc.d/rc.avahidnsconfd start
 fi
 ```
+3. Also stop Avahi at shutdown, so edit your `/etc/rc.d/rc.local_shutdown` add this lines:
+```bash
+# Stop avahidnsconfd
+if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
+  /etc/rc.d/rc.avahidnsconfd stop
+fi
+# Stop avahidaemon
+if [ -x /etc/rc.d/rc.avahidaemon ]; then
+  /etc/rc.d/rc.avahidaemon stop
+fi
+```
+4. Edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
+5. Make sure gdm is the first one to run in the /etc/rc.d/rc.4
+6. Reboot your system.
+7. Use `xwmconfig` to choose GNOME (or Flashback)
+8. Start using `startx`
+
 ### How to compile and use GNOME 40
  1. In console (root), type:
 ```bash
