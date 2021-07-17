@@ -26,8 +26,6 @@
 PRGNAM=$(basename $0 | cut -f1 -d.)
 SRCNAM=CUnit
 VERSION=${VERSION:-$(find . -maxdepth 1 -name "$SRCNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1,2 -d - | rev)}
-SRCVERSION=$(echo $VERSION | tr _ -)
-SLKBVERSION=$(echo $VERSION | tr - .)
 BUILD=${BUILD:-1}
 TAG=${TAG:-_gfs}
 
@@ -75,6 +73,8 @@ fi
 MDSCHK=b5f1a9f6093869c070c6e4a9450cc10c
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
 SRCDOWN=${SRCDOWN:-"http://sourceforge.net/projects/cunit/files/CUnit/$VERSION/CUnit-$VERSION.tar.bz2"}
+SRCVERSION=$(echo $VERSION | tr _ -)
+SLKBVERSION=$(echo $VERSION | tr - .)
 
 if [ -z $(find . -maxdepth 1 -name "$SRCNAM-$VERSION.tar.?z*") ]
 then
