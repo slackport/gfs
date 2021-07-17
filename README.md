@@ -15,10 +15,9 @@
 ### Download and Install Compiled Packages
  1. Use a web browser to download:
  [slackport-gfs-pkg64.tar.xz](https://drive.google.com/u/1/uc?id=15-VyFtpMbp8Xl36YKjzGtgIydOrzFJkw&export=download)
- 2. In console (root), type:
-  2.1. tar xf slackport-gfs-pkg64.tar.xz
-  2.2. cd slackport-gfs-pkg64
-  2.3. upgradepkg --install-new --reinstall *.txz
+ In console (root), type:
+ 2. tar xf slackport-gfs-pkg64.tar.xz
+ 4. upgradepkg --install-new --reinstall slackport-gfs-pkg64/*.txz
 
 ### Configuring
 
