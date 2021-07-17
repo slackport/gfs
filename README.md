@@ -12,14 +12,26 @@
  
  100% Compatible with slackware64-current.
 
+### Download and Install Compiled Packages
+ 1. Use a web browser to download:
+ [slackport-gfs-pkg64.tar.xz](https://drive.google.com/u/1/uc?id=15-VyFtpMbp8Xl36YKjzGtgIydOrzFJkw&export=download)
+ 2. In console (root), type:
+  2.1. tar xf slackport-gfs-pkg64.tar.xz
+  2.2. cd slackport-gfs-pkg64
+  2.3. upgradepkg --install-new --reinstall *.txz
+
+### Configuring
+
+
 ### How to compile and use GNOME 40
  In console (root), type:
  1. git clone https://github.com/slackport/gfs
  2. cd gfs
  3. sh gfs
  4. After compile and install everything, edit your /etc/inittab to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
- 5. Reboot your system.
- 6. Use 'startx' to choose GNOME (or Flashback).
+ 5. Make sure gdm is the first one to run in the /etc/rc.d/rc.4 
+ 6. Reboot your system.
+ 7. Use 'startx' to choose GNOME (or Flashback).
 
 ### If you want do make a slackport-gfs package
  In console (root), type:
@@ -28,7 +40,7 @@
  3. sh gfs autopkg
  3. cd .. && rm -rf gfs
  5. upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
- 6. gfs
+ 6. gfs -help
 
 ### Things you should know
 - The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
