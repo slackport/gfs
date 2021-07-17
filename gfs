@@ -134,7 +134,7 @@ else
   exit 1
  else
   mkdir -p "$PKGREQ" || exit 1
-  cp newtemplate.SlackBuild "$PKGREQ"/"$PKGREQ".SlackBuild || exit 1
+  cp template.SlackBuild "$PKGREQ"/"$PKGREQ".SlackBuild || exit 1
   edit || exit 1
   build || exit 1
   unset FINDREQ
