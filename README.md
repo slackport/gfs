@@ -84,7 +84,7 @@ cd gfs
 sh gfs autopkg
 cd .. && rm -rf gfs
 upgradepkg --install-new --reinstall /tmp/slackport-gfs-0.2.9-x86_64-1_gfs.txz
-gfs -help
+gfs help
 ```
 
 ### Things you should know
