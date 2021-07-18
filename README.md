@@ -88,11 +88,11 @@ gfs -help
 ```
 
 ### Things you should know
-- The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
-a symlink will be created on /usr/sbin/gfs to make things easier (for me at least).
 - GDM is a big problem since 2016, and I'm not going to try harder to make it work, BUT
 on GNOME 40 we will need it for some functions to work correctly (blank screen, lock screen), so
 with this configuration I used gdm will run like a deamon.
+- The slackport-gfs-0.2.9-x86_64-1_gfs.txz will be installed on /opt directory;
+a symlink will be created on /usr/sbin/gfs to make things easier (for me at least).
 
 ### About gfs script
 gfs is my tool for editing, compiling and installing packages. 
