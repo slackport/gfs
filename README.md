@@ -13,12 +13,13 @@
 100% Compatible with slackware64-current.
 
 ### Download and Install Compiled Packages
-1. Use a web browser to download:
-[slackport-gfs-pkg64.tar.xz](https://drive.google.com/u/1/uc?id=15-VyFtpMbp8Xl36YKjzGtgIydOrzFJkw&export=download)
-2. Open a console, login root, and type:
+1. Download using this command:
 ```bash
-tar xf slackport-gfs-pkg64.tar.xz
-upgradepkg --install-new --reinstall slackport-gfs-pkg64/*.txz
+lftp -c mirror "http://slackware.uk/gfs/gfs-40.2/pkg64" -c gfs-40.2-pkg64
+```
+2. As root, and type:
+```bash
+upgradepkg --install-new --reinstall gfs-40.2-pkg64/*.txz
 ```
 
 ### Configuring
@@ -102,13 +103,14 @@ It's simple, but it saves me a lot of time and energy.
 If you are interested in improving this GNOME release, maybe gfs will be useful for you too.
 
 ### Thanks
+- [Slackware UK](http://slackware.uk/)
 - [Linux From Scratch](http://www.linuxfromscratch.org/)
-- [Raphael Fabeni](https://github.com/raphaelfabeni)
-- [Cristina Mansur](mailto:cristinatmansur@gmail.com)
-- [Willy Sudiarto Raharjo](https://github.com/willysr)
 - [Arch Linux Team](https://www.archlinux.org/)
 - [Gentoo Linux Team](https://www.gentoo.org/)
 - [SlackBuilds Team](https://slackbuilds.org/)
+- [Raphael Fabeni](https://github.com/raphaelfabeni)
+- [Cristina Mansur](mailto:cristinatmansur@gmail.com)
+- [Willy Sudiarto Raharjo](https://github.com/willysr)
 
 ### Contact.
  If you can help me to improve this project, please:
