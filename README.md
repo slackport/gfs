@@ -17,7 +17,7 @@
 ```bash
 lftp -c mirror "http://slackware.uk/gfs/gfs-40.2/pkg64" -c gfs-40.2-pkg64
 ```
-2. As root, and type:
+2. As root, install:
 ```bash
 upgradepkg --install-new --reinstall gfs-40.2-pkg64/*.txz
 ```
