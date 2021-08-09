@@ -476,7 +476,6 @@ vinagre
 orca
 
 # GNOME Boxes and Deps
-liburing
 liburcu
 # cmocka - an unit test - dont install
 glusterfs
