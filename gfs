@@ -255,7 +255,7 @@ gst-plugins-bad
 libdazzle
 sysprof
 libcloudproviders
-# gtk+4
+#gtk+4
 gtksourceview4
 lua
 lua53
