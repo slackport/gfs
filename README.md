@@ -50,7 +50,6 @@ fi
 3. Also stop Avahi at shutdown, so edit your `/etc/rc.d/rc.local_shutdown` adding these lines:
 ```bash
 # Stop avahidnsconfd
-
 if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
   /etc/rc.d/rc.avahidnsconfd stop
 fi
@@ -60,7 +59,7 @@ if [ -x /etc/rc.d/rc.avahidaemon ]; then
 fi
 ```
 4. Edit your `/etc/inittab` to go 4 runlevel ( id:3:initdefault: -> id:4:initdefault: )
-5. Make sure gdm is the first one to run in the `/etc/rc.d/rc.4`
+5. Make sure gdm is the first one to run in the `/etc/rc.d/rc.4` (remove the -nodaemon option)
 6. Reboot your system.
 7. Use `xwmconfig` to choose GNOME (or Flashback)
 8. Start using `startx`
