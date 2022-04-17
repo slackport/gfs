@@ -3,6 +3,7 @@
 # Slackware build script for devhelp
 
 # Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022) and thank you @chrisVV for the patch.
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -64,10 +65,10 @@ DEPCHK=""
 
 if [ -z $VERSION ]
  then
- VERSION=40.0
+ VERSION=41.2
 fi
 
-MDSCHK=b6aa3010750f1375c900804943a0f6f1
+MDSCHK=
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
 SRCDOWN=${SRCDOWN:-"https://download.gnome.org/sources/$PRGNAM/$(echo $VERSION | cut -f1 -d.)/$PRGNAM-$VERSION.tar.xz"}
 
@@ -97,8 +98,10 @@ find -L . \
   -o -perm 511 \) -exec chmod 755 {} \; -o \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
+  
+patch -p1 < $CWD/patches/meson.patch  #if meson release you use is 0.60+ thank you @chrisVV for the patch
 mkdir -p build
+
 cd build
 
 CFLAGS="$SLKCFLAGS" \
@@ -116,7 +119,6 @@ meson .. \
  -Dflatpak_build=false \
  -Dgtk_doc=true \
  -Dplugin_emacs=true \
- -Dplugin_gedit=true \
  -Dplugin_vim=true
 
 ninja $JOBS || ninja
@@ -130,7 +132,7 @@ for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; r
 
 cd ..
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a AUTHORS HACKING LICENSES NEWS README.md TODO \
+cp -a LICENSES NEWS README.md  \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$(basename $0) > $PKG/usr/doc/$PRGNAM-$VERSION/$(basename $0)
 
