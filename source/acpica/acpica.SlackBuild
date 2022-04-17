@@ -4,6 +4,7 @@
 
 # Copyright 2008-2017 Heinz Wiesinger, Amsterdam, The Netherlands
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -66,10 +67,10 @@ OPTDEP=""
 
 if [ -z $VERSION ]
  then
- VERSION=20210331
+ VERSION=20220331
 fi
 
-MDSCHK=bf54ef57eeff1c3be04669d9526a29b3
+MDSCHK=
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
 SRCDOWN=${SRCDOWN:-"https://acpica.org/sites/acpica/files/acpica-unix-$VERSION.tar.gz"}
 
