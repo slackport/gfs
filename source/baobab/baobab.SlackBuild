@@ -3,6 +3,7 @@
 # Slackware build script for baobab
 
 # Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,29 +23,44 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate https://download.gnome.org/sources/baobab/40/baobab-40.0.tar.xz
+wget -c --no-check-certificate https://download.gnome.org/sources/baobab/42/baobab-42.0.tar.xz
 
-PRGNAM=baobab
-VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+
+
+
+
+cd $(dirname $0) ; CWD=$(pwd)
+
+PRGNAM=baobab		# replace with name of program
+VERSION=${VERSION:-42.0}	# replace with version of program
 BUILD=${BUILD:-1}
-TAG=${TAG:-_gfs}
+TAG=${TAG:-_gfs}		# the "_SBo" is required
+PKGTYPE=${PKGTYPE:-tgz}
 
+# Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
-    i?86) ARCH=i486 ;;
+    i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
        *) ARCH=$( uname -m ) ;;
   esac
 fi
 
-CWD=$(pwd)
-TMP=${TMP:-/tmp/gfs}
-PKG=$TMP/pkg-$PRGNAM
-OUTPUT=${OUTPUT:-/tmp}
-JOBS=${JOBS:-" -j$(expr $(getconf _NPROCESSORS_ONLN) \* 2 ) "}
+# If the variable PRINT_PACKAGE_NAME is set, then this script will report what
+# the name of the created package would be, and then exit. This information
+# could be useful to other scripts.
+if [ ! -z "${PRINT_PACKAGE_NAME}" ]; then
+  echo "$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+  exit 0
+fi
 
-if [ "$ARCH" = "i486" ]; then
-  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+TMP=${TMP:-/tmp/SBo}	# For consistency's sake, use this
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}	# Drop the package in /tmp
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
   LIBDIRSUFFIX=""
 elif [ "$ARCH" = "i686" ]; then
   SLKCFLAGS="-O2 -march=i686 -mtune=i686"
@@ -57,15 +73,17 @@ else
   LIBDIRSUFFIX=""
 fi
 
-set -e
+set -e # Exit on most errors
+# If you prefer to do selective error checking with
+#   command || exit 1
+# then that's also acceptable.
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xfv $CWD/$PRGNAM-$VERSION.tar.?z*
+tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
 cd $PRGNAM-$VERSION
-
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -73,37 +91,68 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p build
+# Your application will probably need different configure flags;
+# these are provided as an example only.
+# Be sure to build only shared libraries unless there's some need for
+# static.
+mkdir build
 cd build
+  CFLAGS="$SLKCFLAGS" \
+  CXXFLAGS="$SLKCFLAGS" \
+  meson .. \
+    --buildtype=release \
+    --libdir=/usr/lib${LIBDIRSUFFIX} \
+    --localstatedir=/var \
+    --mandir=/usr/man \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    -Dstrip=true
+  "${NINJA:=ninja}"
+  DESTDIR=$PKG $NINJA install
+cd ..
 
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-meson .. \
- --prefix=/usr \
- --libdir=/usr/lib${LIBDIRSUFFIX} \
- --sysconfdir=/etc \
- --localstatedir=/var \
- --mandir=/usr/man \
- --buildtype=release
+# Don't ship .la files:
+rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
 
-ninja $JOBS || ninja
-DESTDIR=$PKG ninja install
-
+# Strip binaries and libraries - this can be done with 'make install-strip'
+# in many source trees, and that's usually acceptable if so, but if not,
+# use this:
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+# Compress man pages
+# If the man pages are installed to /usr/share/man instead, you'll need to either
+# add the --mandir=/usr/man flag to configure or move them manually after the
+# make install process is run.
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
-cd ..
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a AUTHORS COPYING* NEWS README.md \
-  $PKG/usr/doc/$PRGNAM-$VERSION
-cat $CWD/$(basename $0) > $PKG/usr/doc/$PRGNAM-$VERSION/$(basename $0)
 
+
+# Remove perllocal.pod and other special files that don't need to be installed,
+# as they will overwrite what's already on the system.  If this is not needed,
+# remove it from the script.
+# Remove 'special' files
+find $PKG -name perllocal.pod \
+  -o -name ".packlist" \
+  -o -name "*.bs" \
+  | xargs rm -f
+
+# Copy program documentation into the package
+# The included documentation varies from one application to another, so be sure
+# to adjust your script as needed
+# Also, include the SlackBuild script in the documentation directory
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION    
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
 mkdir -p $PKG/install
-cp $CWD/slack-desc $PKG/install
-cp $CWD/doinst.sh $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
 
+
+# Make the package; be sure to leave it in $OUTPUT
+# If package symlinks need to be created during install *before*
+# your custom contents of doinst.sh runs, then add the -p switch to
+# the makepkg command below -- see makepkg(8) for details
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
