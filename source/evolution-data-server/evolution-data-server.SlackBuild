@@ -3,6 +3,7 @@
 # Slackware build script for evolution-data-server
 
 # Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,8 +23,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate http://ftp.gnome.org/pub/GNOME/sources/evolution-data-server/3.40/evolution-data-server-3.40.2.tar.xz
-
+wget -c --no-check-certificate https://gitlab.gnome.org/GNOME/evolution-data-server/-/archive/master/evolution-data-server-master.tar.gz
 PRGNAM=evolution-data-server
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
 BUILD=${BUILD:-1}
@@ -102,12 +102,12 @@ cmake .. \
  -DENABLE_CANBERRA=ON \
  -DENABLE_OAUTH2=ON \
  -DENABLE_EXAMPLES=OFF \
- -DENABLE_GOA=ON \
+ -DENABLE_GOA=OFF \
  -DWITH_LIBDB=ON \
  -DENABLE_WEATHER=ON \
- -DENABLE_GOOGLE=ON \
+ -DENABLE_GOOGLE=OFF \
  -DENABLE_LARGEFILE=ON \
- -DWITH_PHONENUMBER=ON \
+ -DWITH_PHONENUMBER=OFF \
  -DWITH_SUNLDAP=ON \
  -DWITH_SYSTEMDUSERUNITDIR=no \
  -G Ninja
