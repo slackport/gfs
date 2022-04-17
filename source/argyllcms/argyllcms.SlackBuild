@@ -7,6 +7,7 @@
 # https://github.com/archlinux/svntogit-community/blob/packages/argyllcms/trunk/PKGBUILD
 # Based on Gentoo ebuild script (Thanks so much!):
 # https://gitweb.gentoo.org/repo/gentoo.git/tree/media-gfx/argyllcms/argyllcms-2.2.0.ebuild
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -26,7 +27,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate https://www.argyllcms.com/Argyll_V2.2.0_src.zip
+wget -c --no-check-certificate https://www.argyllcms.com/Argyll_V2.3.0_src.zip
 
 PRGNAM="argyllcms"
 SRCNAM="Argyll"
