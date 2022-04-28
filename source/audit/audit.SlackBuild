@@ -3,6 +3,7 @@
 # Copyright 2010,  R. Andrew Bailey, Chantilly, VA  USA
 #    2013 - 2014,  Bogdan Radulescu, Bucharest, Romania <bogdan@nimblex.net>
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 #   Permission to use, copy, modify, and distribute this software for
@@ -23,7 +24,7 @@
 #   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 #   SUCH DAMAGE.
 
-wget -c --no-check-certificate http://people.redhat.com/sgrubb/audit/audit-3.0.1.tar.gz
+wget -c --no-check-certificate https://people.redhat.com/sgrubb/audit/audit-3.0.8.tar.gz
 
 PRGNAM=audit
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}

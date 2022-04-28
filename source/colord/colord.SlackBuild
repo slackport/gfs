@@ -4,6 +4,7 @@
 
 # Copyright 2015 Willy Sudiarto Raharjo <willysr@slackbuilds.org>
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -23,7 +24,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate https://www.freedesktop.org/software/colord/releases/colord-1.4.5.tar.xz
+wget -c --no-check-certificate https://www.freedesktop.org/software/colord/releases/colord-1.4.6.tar.xz
 
 PRGNAM=colord
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}

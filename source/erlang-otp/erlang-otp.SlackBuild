@@ -20,6 +20,7 @@
 # 28 November 2016 to reflect the use of README.md instead
 # of README in upstream
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 
 PRGNAM=$(basename $0 | cut -f1 -d.)
 VERSION=${VERSION:-$(find . -maxdepth 1 -name "$PRGNAM-*.tar.?z*" | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
@@ -64,7 +65,7 @@ OPTDEP=""
 
 if [ -z $VERSION ]
  then
- VERSION=23.2
+ VERSION=24.2
 fi
 
 SRC_NAME_VERSION=otp_src_${VERSION}
@@ -136,8 +137,8 @@ chown -R root:root $PKG/usr/lib${LIBDIRSUFFIX}/erlang
 chmod -R u+w,go+r-w,a-s $PKG/usr/lib${LIBDIRSUFFIX}/erlang
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-( cd $PKG/usr/lib${LIBDIRSUFFIX}/erlang
-  mv COPYRIGHT README.md $PKG/usr/doc/$PRGNAM-$VERSION )
+#( cd $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+ # mv LIECENSE.txt README.md $PKG/usr/doc/$PRGNAM-$VERSION )
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mv $PKG/usr/lib${LIBDIRSUFFIX}/erlang/man $PKG/usr

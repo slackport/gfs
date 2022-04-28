@@ -2,6 +2,7 @@
 
 ## Copyright (C) 2016 Ryan S. Northrup <northrup@yellowapple.us>
 ## Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 
 ## Permission is hereby granted, free of charge, to any person
 ## obtaining a copy of this software and associated documentation
@@ -62,12 +63,12 @@ OPTDEP=""
 
 if [ -z $VERSION ]
  then
- VERSION=1.11.3
+ VERSION=1.13.4
 fi
 
 SRC_NAME_VERSION=elixir-${VERSION}
 
-MDSCHK=0319a8428c647cdbc373312a5c25fb5e
+MDSCHK=
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
 SRCDOWN=${SRCDOWN:-"https://github.com/elixir-lang/elixir/archive/v$VERSION/elixir-$VERSION.tar.gz"}
 

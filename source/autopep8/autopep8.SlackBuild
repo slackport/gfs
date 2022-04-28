@@ -4,6 +4,7 @@
 
 # Copyright 2014-2018  Dimitris Zlatanidis  Orestiada, Greece
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -65,12 +66,13 @@ DEPCHK="pycodestyle"
 
 if [ -z $VERSION ]
  then
- VERSION=1.4
+ VERSION=1.6.0
 fi
 
-MDSCHK=0cb541c5d62eb7cfda1102d62f07d6d5
+MDSCHK=
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
-SRCDOWN=${SRCDOWN:-"https://files.pythonhosted.org/packages/cf/30/9efc988f92f41e2ba51211e3d317ee82260d563ae84dceb53f7021a1bdfe/autopep8-$VERSION.tar.gz"}
+SRCDOWN=${SRCDOWN:-"https://files.pythonhosted.org/packages/ec/67/564f7d15712a84d4035aa5ad0b97eeafdeccdb7e806d6a822595bf0ffa5f/autopep8-1.6.0.tar.gz"}
+
 
 if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
 then
@@ -99,7 +101,7 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-python2 setup.py install --root=$PKG
+#python2 setup.py install --root=$PKG
 python3 setup.py install --root=$PKG
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \

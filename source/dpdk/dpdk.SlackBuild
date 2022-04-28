@@ -3,6 +3,7 @@
 # Slackware build script for dpdk
 
 # Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -65,12 +66,12 @@ OPTDEP=""
 
 if [ -z $VERSION ]
  then
- VERSION=21.05
+ VERSION=22.03
 fi
 
-MDSCHK=a78bba290b11d9717d1272cc6bfaf7c3
-DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
-SRCDOWN=${SRCDOWN:-"http://fast.dpdk.org/rel/dpdk-$VERSION.tar.xz"}
+MDSCHK=
+DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate http://fast.dpdk.org/rel/dpdk-22.03.tar.xz"}
+SSRCDOWN=${SRCDOWN:-"http://fast.dpdk.org/rel/dpdk-22.03.tar.xz"}
 
 if [ -z $(find . -maxdepth 1 -name "$PRGNAM-$VERSION.tar.?z*") ]
 then

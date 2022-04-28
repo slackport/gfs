@@ -3,6 +3,7 @@
 # Slackware build script for eog
 
 # Copyright 2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -64,10 +65,10 @@ DEPCHK=""
 
 if [ -z $VERSION ]
  then
- VERSION=40.2
+ VERSION=42.0
 fi
 
-MDSCHK=11d08eac38c306cc5c2ce015f0c39351
+MDSCHK=
 DWNLCMD=${DWNLCMD:-"wget -c --no-check-certificate"}
 SRCDOWN=${SRCDOWN:-"https://download.gnome.org/sources/$PRGNAM/$(echo $VERSION | cut -f1 -d.)/$PRGNAM-$VERSION.tar.xz"}
 

@@ -5,6 +5,7 @@
 # Copyright 2016,2021 Rafael Tavares (mdrafaeltavares@gmail.com) Bahia, Brazil.
 # Based on Linux From Scratch online book (Thanks!!!):
 # https://www.linuxfromscratch.org/blfs/view/svn/gnome/cheese.html
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -24,7 +25,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate https://download.gnome.org/sources/cheese/3.38/cheese-3.38.0.tar.xz
+wget -c --no-check-certificate https://download.gnome.org/sources/cheese/41/cheese-41.1.tar.xz
 
 PRGNAM=cheese
 VERSION=${VERSION:-$(echo $PRGNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
@@ -79,7 +80,7 @@ find -L . \
 sed -i "s/&version;/3.38.0/" docs/reference/cheese{,-docs}.xml
 
 # Fix vala removed functions
-patch -Np1 -i $CWD/cheese-3.38.0-upstream_fixes-1.patch
+#patch -Np1 -i $CWD/cheese-3.38.0-upstream_fixes-1.patch
 
 mkdir -p build
 cd build

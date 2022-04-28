@@ -4,6 +4,7 @@
 
 # Copyright 2014-2016  Dimitris Zlatanidis  Orestiada, Greece
 # Modified by Rafael Tavares <mdrafaeltavares@gmail.com> for gfs (2021)
+# Modified by Ioannis Anagnostakis <rizitis@gmail.com> GR (2022)
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -23,8 +24,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-wget -c --no-check-certificate https://pypi.python.org/packages/7c/69/c2ce7e91c89dc073eb1aa74c0621c3eefbffe8216b3f9af9d3885265c01c/configparser-3.5.0.tar.gz
-
+wget -c --no-check-certificate https://files.pythonhosted.org/packages/02/a8/5fae273a45a3e4e34ea560c99a4843fe2d9fc6fb691de064dc9c72c46e57/configparser-5.2.0.tar.gz
 PRGNAM=ConfigParser
 SRCNAM=${PRGNAM,,}
 VERSION=${VERSION:-$(echo $SRCNAM-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
@@ -73,7 +73,7 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-python setup.py install --root=$PKG
+#python setup.py install --root=$PKG
 python3 setup.py install --root=$PKG
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
